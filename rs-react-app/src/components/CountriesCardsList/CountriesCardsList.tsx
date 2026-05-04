@@ -17,13 +17,17 @@ export interface ICountry {
   population: number;
 }
 
+interface IProps {
+  searchStr?: string;
+}
+
 interface IState {
   countries: ICountry[];
   isLoading: boolean;
   error: string | null;
 }
 
-export class CardsList extends Component<{}, IState> {
+export class CardsList extends Component<IProps, IState> {
   constructor(props: {}) {
     super(props);
     this.state = {
@@ -56,14 +60,21 @@ export class CardsList extends Component<{}, IState> {
 
   render() {
     const { countries, isLoading, error } = this.state;
+    const { searchStr = '' } = this.props;
 
     if (isLoading)
       return <div className={classes.loader}>Loading countries...</div>;
     if (error) return <div className={classes.error}>Error: {error}</div>;
 
+    const filtered = searchStr.trim()
+      ? countries.filter((c) =>
+          c.name.common.toLowerCase().includes(searchStr.toLowerCase())
+        )
+      : countries;
+
     return (
       <ul className={classes.cardsContainer}>
-        {countries.map((country) => (
+        {filtered.map((country) => (
           <CountryCard
             key={country.cca3}
             name={country.name}

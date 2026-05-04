@@ -1,0 +1,36 @@
+.searchBox {
+    max-width: 240px;
+    margin: auto;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    column-gap: 0.7rem;
+    padding: 8px 15px;
+    background: var(--secondary-color);
+    border-radius: 4rem;
+}
+
+.search {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-color);
+    font-size: 0.938rem;
+}
+
+.search::placeholder {
+    color: #7378c5;
+}
+
+.search:focus {
+    outline: none;
+    background-color: var(--secondary-color);
+}
+
+.searchLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
