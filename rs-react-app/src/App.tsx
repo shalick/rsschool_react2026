@@ -14,14 +14,14 @@ class App extends Component<{}, AppState> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      searchStr: localStorage.getItem('searchStr') || '',
+      searchStr: localStorage.getItem('searchStr')?.trim() || '',
       simulateError: false,
     };
   }
 
   handleSearchChange = (newStr: string) => {
     this.setState({ searchStr: newStr });
-    localStorage.setItem('searchStr', newStr);
+    localStorage.setItem('searchStr', newStr.trim());
   };
 
   toggleError = () => {

@@ -14,7 +14,6 @@ export class Search extends Component<SearchProps> {
   };
 
   handleButtonClick = () => {
-    // Focus the input when the search button is clicked
     this.inputRef.current?.focus();
   };
 
