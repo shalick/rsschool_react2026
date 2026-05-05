@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { CountryCard } from '../CountryCard/CountryCard';
 import classes from './CountriesCardsList.module.css';
 

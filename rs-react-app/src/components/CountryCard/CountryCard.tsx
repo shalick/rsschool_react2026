@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import classes from './CountryCard.module.css';
 
 interface ICountryCard {
