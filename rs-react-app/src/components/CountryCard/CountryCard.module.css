@@ -1,74 +1,68 @@
+/* CountryCard.module.css */
+
 .country {
-  width: 320px;
-  margin: 1rem;
-  background-color: var(--secondary-color);
-  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.2);
   position: relative;
+  background-color: var(--secondary-color, #fff);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.2rem 0.7rem rgba(0, 0, 0, 0.03);
   overflow: hidden;
-  border-radius: 3px;
-  transition: 0.5s;
-  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.country img {
-  transition: 0.5s;
-}
-
-.country:hover img {
-  transform: scale(1.2);
-}
-
-.country img {
+/* Invisible second shadow on hover */
+.country::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
+  height: 100%;
+  border-radius: 0.5rem;
+  box-shadow: 0 1.5rem 2rem -1rem rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.country:hover {
+  transform: translateY(-0.5rem);
+}
+
+.country:hover::after {
+  opacity: 1;
+}
+
+.flag {
+  display: block;
+  width: 100%;
+  height: 16rem;
+  object-fit: cover;
+  border-radius: 0.5rem 0.5rem 0 0;
+  background-color: var(--primary-color, #f0f0f0);
 }
 
 .countryInfo {
-  color: var(--text-color);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem 1rem;
-  letter-spacing: 0.5px;
+  padding: 2rem 2.2rem 3rem;
+  color: var(--text-color, #111);
 }
 
 .countryInfo h3 {
-  margin-top: 0;
-  text-align: center;
+  margin: 0 0 1.2rem;
+  font-size: 1.6rem;
+  font-weight: 800;
 }
 
-.countryInfo span {
-  background-color: var(--primary-color);
-  padding: 0.25rem 0.5rem;
-  border-radius: 3px;
-  font-weight: bold;
+.details {
+  display: grid;
+  gap: 0.8rem;
 }
 
-.countryInfo span.green {
-  color: lightgreen;
+.details p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
-.countryInfo span.orange {
-  color: orange;
-}
-
-.countryInfo span.red {
-  color: red;
-}
-
-.overview {
-  background-color: #fff;
-  color: var(--secondary-color);
-  padding: 2rem;
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  max-height: 100%;
-  transform: translateY(101%);
-  transition: transform 0.3s ease-in;
-}
-
-.coutry:hover .overview {
-  transform: translateY(0);
+.details strong {
+  font-weight: 600;
 }
