@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { CountryCard } from '../CountryCard/CountryCard';
 import classes from './CountriesCardsList.module.css';
+import { Loader } from '../Loader/Loader';
 
 export interface ICountry {
   cca3: string;
@@ -62,8 +63,7 @@ export class CardsList extends Component<IProps, IState> {
     const { countries, isLoading, error } = this.state;
     const { searchStr = '' } = this.props;
 
-    if (isLoading)
-      return <div className={classes.loader}>Loading countries...</div>;
+    if (isLoading) return <Loader />; // <-- spinner instead of text
     if (error) return <div className={classes.error}>Error: {error}</div>;
 
     const filtered = searchStr.trim()
