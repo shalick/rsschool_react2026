@@ -1,0 +1,44 @@
+import { Component, type ErrorInfo, type ReactNode } from 'react';
+
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static getDerivedStateFromError(_error: Error): ErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <h1>Something went wrong.</h1>
+          <p>
+            Please try again later or use the button below to reset the error
+            simulation.
+          </p>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}

@@ -1,0 +1,46 @@
+/* CountriesCardsList.module.css */
+
+.loader,
+.error {
+  text-align: center;
+  padding: 4rem 1rem;
+  font-size: 1.2rem;
+  color: var(--text-color, #333);
+}
+
+.cardsContainer {
+  list-style: none;
+  padding: 0;
+  margin: 2rem auto;
+  display: grid;
+  justify-content: center;
+  gap: 2rem;
+  grid-template-columns: 26.4rem;          /* mobile: single column */
+}
+
+@media (min-width: 576px) {
+  .cardsContainer {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .cardsContainer {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 992px) {
+  .cardsContainer {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .cardsContainer {
+    gap: 4rem;
+    max-width: 1300px;   /* optional, caps width on huge screens */
+    margin: 3rem auto;
+  }
+}
