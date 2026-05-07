@@ -4,6 +4,7 @@ import classes from './Search.module.css';
 interface SearchProps {
   searchStr: string;
   onSearchChange: (value: string) => void;
+  onSearch: (trimmedValue: string) => void;
 }
 
 export class Search extends Component<SearchProps> {
@@ -14,6 +15,8 @@ export class Search extends Component<SearchProps> {
   };
 
   handleButtonClick = () => {
+    const trimmed = this.props.searchStr.trim();
+    this.props.onSearch(trimmed);
     this.inputRef.current?.focus();
   };
 

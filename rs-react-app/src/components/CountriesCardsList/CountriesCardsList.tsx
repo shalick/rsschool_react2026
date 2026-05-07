@@ -1,7 +1,6 @@
 import { Component } from 'react';
 import { CountryCard } from '../CountryCard/CountryCard';
 import { Loader } from '../Loader/Loader';
-import { fetchAllCountries } from '../../api/Countriesapi';
 import classes from './CountriesCardsList.module.css';
 
 export interface ICountry {
@@ -14,41 +13,14 @@ export interface ICountry {
 }
 
 interface IProps {
-  searchStr?: string;
-}
-
-interface IState {
   countries: ICountry[];
   isLoading: boolean;
   error: string | null;
 }
 
-export class CardsList extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {
-      countries: [],
-      isLoading: true,
-      error: null,
-    };
-  }
-
-  componentDidMount() {
-    fetchAllCountries()
-      .then((data) => {
-        this.setState({ countries: data, isLoading: false });
-      })
-      .catch((error: Error) => {
-        this.setState({
-          error: error.message,
-          isLoading: false,
-        });
-      });
-  }
-
+export class CardsList extends Component<IProps> {
   render() {
-    const { countries, isLoading, error } = this.state;
-    const { searchStr = '' } = this.props;
+    const { countries, isLoading, error } = this.props;
 
     if (isLoading) return <Loader />;
 
@@ -61,15 +33,9 @@ export class CardsList extends Component<IProps, IState> {
       );
     }
 
-    const filtered = searchStr.trim()
-      ? countries.filter((c) =>
-          c.name.common.toLowerCase().includes(searchStr.toLowerCase())
-        )
-      : countries;
-
     return (
       <ul className={classes.cardsContainer}>
-        {filtered.map((country) => (
+        {countries.map((country) => (
           <CountryCard
             key={country.cca3}
             name={country.name}

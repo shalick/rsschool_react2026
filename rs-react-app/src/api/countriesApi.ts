@@ -35,3 +35,26 @@ export async function fetchAllCountries(): Promise<ICountry[]> {
 
   return response.json();
 }
+
+export async function fetchCountriesByName(name: string): Promise<ICountry[]> {
+  const url = `/api/v3.1/name/${encodeURIComponent(name)}?fields=name,flags,capital,region,population,cca3`;
+
+  let response: Response;
+  try {
+    response = await fetch(url);
+  } catch {
+    throw new Error(
+      'Unable to connect to the server. Please check your internet connection and try again.'
+    );
+  }
+
+  if (response.status === 404) {
+    return [];
+  }
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(response.status));
+  }
+
+  return response.json();
+}
