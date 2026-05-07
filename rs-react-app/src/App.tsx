@@ -10,8 +10,13 @@ interface AppState {
   simulateError: boolean;
 }
 
-class App extends Component<{}, AppState> {
-  constructor(props: {}) {
+interface AppState {
+  searchStr: string;
+  simulateError: boolean;
+}
+
+class App extends Component<Record<string, never>, AppState> {
+  constructor(props: Record<string, never>) {
     super(props);
     this.state = {
       searchStr: localStorage.getItem('searchStr')?.trim() || '',

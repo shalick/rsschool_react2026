@@ -1,18 +1,13 @@
 import { Component } from 'react';
 import { CountryCard } from '../CountryCard/CountryCard';
-import classes from './CountriesCardsList.module.css';
 import { Loader } from '../Loader/Loader';
+import { fetchAllCountries } from '../../api/Countriesapi';
+import classes from './CountriesCardsList.module.css';
 
 export interface ICountry {
   cca3: string;
-  name: {
-    common: string;
-  };
-  flags: {
-    png: string;
-    svg: string;
-    alt?: string;
-  };
+  name: { common: string };
+  flags: { png: string; svg: string; alt?: string };
   capital?: string[];
   region: string;
   population: number;
@@ -29,7 +24,7 @@ interface IState {
 }
 
 export class CardsList extends Component<IProps, IState> {
-  constructor(props: {}) {
+  constructor(props: IProps) {
     super(props);
     this.state = {
       countries: [],
@@ -39,21 +34,13 @@ export class CardsList extends Component<IProps, IState> {
   }
 
   componentDidMount() {
-    fetch('/api/v3.1/all?fields=name,flags,capital,region,population,cca3')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Server returned status ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data: ICountry[]) => {
+    fetchAllCountries()
+      .then((data) => {
         this.setState({ countries: data, isLoading: false });
       })
-      .catch((error) => {
-        console.error('Fetch error details:', error);
+      .catch((error: Error) => {
         this.setState({
-          error:
-            'The API returned HTML instead of data. This usually means the service is temporarily down or blocking the request.',
+          error: error.message,
           isLoading: false,
         });
       });
@@ -63,8 +50,16 @@ export class CardsList extends Component<IProps, IState> {
     const { countries, isLoading, error } = this.state;
     const { searchStr = '' } = this.props;
 
-    if (isLoading) return <Loader />; // <-- spinner instead of text
-    if (error) return <div className={classes.error}>Error: {error}</div>;
+    if (isLoading) return <Loader />;
+
+    if (error) {
+      return (
+        <div className={classes.error}>
+          <p>⚠️ {error}</p>
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      );
+    }
 
     const filtered = searchStr.trim()
       ? countries.filter((c) =>
