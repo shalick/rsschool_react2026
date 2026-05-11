@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { CardsList } from './CountriesCardsList';
 import type { ICountry } from './CountriesCardsList';
 import { describe, expect, it, vi } from 'vitest';
@@ -93,5 +93,19 @@ describe('CardsList', () => {
       />
     );
     expect(screen.getByTestId('country-card')).toHaveTextContent('Antarctica');
+  });
+
+  it('calls window.location.reload when retry button is clicked', () => {
+    const reloadMock = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { reload: reloadMock },
+      writable: true,
+    });
+
+    render(<CardsList countries={[]} isLoading={false} error="Test error" />);
+    const button = screen.getByRole('button', { name: /retry/i });
+    fireEvent.click(button);
+
+    expect(reloadMock).toHaveBeenCalled();
   });
 });
