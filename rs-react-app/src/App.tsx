@@ -4,7 +4,7 @@ import { CardsList } from './components/CountriesCardsList/CountriesCardsList';
 import { Search } from './components/Search/Search';
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
 import { ErrorSimulator } from './components/ErrorSimulator/ErrorSimulator';
-import { fetchAllCountries, fetchCountriesByName } from './api/Countriesapi';
+import { fetchAllCountries, fetchCountriesByName } from './api/countriesApi';
 import type { ICountry } from './components/CountriesCardsList/CountriesCardsList';
 
 interface AppState {
