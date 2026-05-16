@@ -1,4 +1,4 @@
-import React, { Component, createRef } from 'react';
+import React, { useRef } from 'react';
 import classes from './Search.module.css';
 
 interface SearchProps {
@@ -7,44 +7,42 @@ interface SearchProps {
   onSearch: (trimmedValue: string) => void;
 }
 
-export class Search extends Component<SearchProps> {
-  private inputRef = createRef<HTMLInputElement>();
+export function Search({ searchStr, onSearchChange, onSearch }: SearchProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.props.onSearchChange(event.target.value);
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    onSearchChange(event.target.value);
   };
 
-  handleButtonClick = () => {
-    const trimmed = this.props.searchStr.trim();
-    this.props.onSearch(trimmed);
-    this.inputRef.current?.focus();
+  const handleButtonClick = () => {
+    const trimmed = searchStr.trim();
+    onSearch(trimmed);
+    inputRef.current?.focus();
   };
 
-  render() {
-    return (
-      <div className={classes.searchBox}>
-        <input
-          type="search"
-          id="search"
-          className={classes.search}
-          placeholder="Search for a country…"
-          autoFocus
-          value={this.props.searchStr}
-          onChange={this.handleInputChange}
-          ref={this.inputRef}
-        />
-        <label htmlFor="search" className={classes.searchLabel}>
-          Search
-        </label>
-        <button
-          type="button"
-          className={classes.searchButton}
-          onClick={this.handleButtonClick}
-          aria-label="Search"
-        >
-          🔍
-        </button>
-      </div>
-    );
-  }
+  return (
+    <div className={classes.searchBox}>
+      <input
+        type="search"
+        id="search"
+        className={classes.search}
+        placeholder="Search for a country…"
+        autoFocus
+        value={searchStr}
+        onChange={handleInputChange}
+        ref={inputRef}
+      />
+      <label htmlFor="search" className={classes.searchLabel}>
+        Search
+      </label>
+      <button
+        type="button"
+        className={classes.searchButton}
+        onClick={handleButtonClick}
+        aria-label="Search"
+      >
+        🔍
+      </button>
+    </div>
+  );
 }

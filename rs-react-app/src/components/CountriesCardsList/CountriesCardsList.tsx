@@ -1,4 +1,3 @@
-import { Component } from 'react';
 import { CountryCard } from '../CountryCard/CountryCard';
 import { Loader } from '../Loader/Loader';
 import classes from './CountriesCardsList.module.css';
@@ -18,34 +17,30 @@ interface IProps {
   error: string | null;
 }
 
-export class CardsList extends Component<IProps> {
-  render() {
-    const { countries, isLoading, error } = this.props;
+export const CardsList = ({ countries, isLoading, error }: IProps) => {
+  if (isLoading) return <Loader />;
 
-    if (isLoading) return <Loader />;
-
-    if (error) {
-      return (
-        <div className={classes.error}>
-          <p>⚠️ {error}</p>
-          <button onClick={() => window.location.reload()}>Retry</button>
-        </div>
-      );
-    }
-
+  if (error) {
     return (
-      <ul className={classes.cardsContainer}>
-        {countries.map((country) => (
-          <CountryCard
-            key={country.cca3}
-            name={country.name}
-            flags={country.flags}
-            capital={country.capital}
-            region={country.region}
-            population={country.population}
-          />
-        ))}
-      </ul>
+      <div className={classes.error}>
+        <p>⚠️ {error}</p>
+        <button onClick={() => window.location.reload()}>Retry</button>
+      </div>
     );
   }
-}
+
+  return (
+    <ul className={classes.cardsContainer}>
+      {countries.map((country) => (
+        <CountryCard
+          key={country.cca3}
+          name={country.name}
+          flags={country.flags}
+          capital={country.capital}
+          region={country.region}
+          population={country.population}
+        />
+      ))}
+    </ul>
+  );
+};
