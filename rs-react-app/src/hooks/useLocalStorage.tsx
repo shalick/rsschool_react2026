@@ -25,11 +25,17 @@ export function useLocalStorage<T>(
         setStoredValue((prevValue) => {
           const valueToStore =
             value instanceof Function ? value(prevValue) : value;
-          localStorage.setItem(key, JSON.stringify(valueToStore));
+
+          try {
+            localStorage.setItem(key, JSON.stringify(valueToStore));
+          } catch (error) {
+            console.error(`Error writing key "${key}" to localStorage:`, error);
+          }
+
           return valueToStore;
         });
       } catch (error) {
-        console.error(`Error writing key "${key}" to localStorage:`, error);
+        console.error(`Error in setValue wrapper for key "${key}":`, error);
       }
     },
     [key]
