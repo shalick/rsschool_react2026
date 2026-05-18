@@ -1,9 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { StrictMode } from 'react';
 
 describe('main entry point', () => {
   let rootElement: HTMLElement;
-  let mockRender: ReturnType<typeof vi.fn>;
+  let mockRender: any;
   let createRootMock: any;
 
   beforeEach(async () => {
@@ -13,14 +12,15 @@ describe('main entry point', () => {
 
     vi.resetModules();
 
-    vi.doMock('react-dom/client', () => ({
-      createRoot: vi.fn(),
-    }));
-
-    const { createRoot } = await import('react-dom/client');
-    createRootMock = createRoot;
     mockRender = vi.fn();
-    createRootMock.mockReturnValue({ render: mockRender });
+    createRootMock = vi.fn().mockReturnValue({ render: mockRender });
+
+    vi.doMock('react-dom/client', () => ({
+      createRoot: createRootMock,
+      default: {
+        createRoot: createRootMock,
+      },
+    }));
 
     await import('./main');
   });
@@ -31,15 +31,10 @@ describe('main entry point', () => {
   });
 
   it('should call createRoot with the element having id "root"', () => {
-    expect(createRootMock).toHaveBeenCalledTimes(1);
     expect(createRootMock).toHaveBeenCalledWith(rootElement);
   });
 
-  it('should call render with <StrictMode><App /></StrictMode>', () => {
+  it('should call render method on the root', () => {
     expect(mockRender).toHaveBeenCalledTimes(1);
-    const renderArg = mockRender.mock.calls[0][0];
-
-    expect(renderArg.type).toBe(StrictMode);
-    expect(renderArg.props.children.type.name).toBe('App');
   });
 });

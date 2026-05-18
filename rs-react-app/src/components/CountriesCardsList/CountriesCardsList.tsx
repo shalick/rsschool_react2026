@@ -1,6 +1,7 @@
+import { Link, useLocation } from 'react-router-dom';
 import { CountryCard } from '../CountryCard/CountryCard';
-import { Loader } from '../Loader/Loader';
 import classes from './CountriesCardsList.module.css';
+import { Loader } from '../Loader/Loader';
 
 export interface ICountry {
   cca3: string;
@@ -17,9 +18,10 @@ interface IProps {
   error: string | null;
 }
 
-export const CardsList = ({ countries, isLoading, error }: IProps) => {
-  if (isLoading) return <Loader />;
+export function CardsList({ countries, isLoading, error }: IProps) {
+  const location = useLocation();
 
+  if (isLoading) return <Loader />;
   if (error) {
     return (
       <div className={classes.error}>
@@ -32,15 +34,23 @@ export const CardsList = ({ countries, isLoading, error }: IProps) => {
   return (
     <ul className={classes.cardsContainer}>
       {countries.map((country) => (
-        <CountryCard
+        <Link
           key={country.cca3}
-          name={country.name}
-          flags={country.flags}
-          capital={country.capital}
-          region={country.region}
-          population={country.population}
-        />
+          to={{
+            pathname: `/${country.cca3.toLowerCase()}`,
+            search: location.search,
+          }}
+          className={classes.cardLink}
+        >
+          <CountryCard
+            name={country.name}
+            flags={country.flags}
+            capital={country.capital}
+            region={country.region}
+            population={country.population}
+          />
+        </Link>
       ))}
     </ul>
   );
-};
+}

@@ -1,0 +1,25 @@
+.homeLayout {
+  display: flex;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.leftSection {
+  flex: 1;
+  padding: 1rem;
+}
+
+.rightSection {
+  width: 0;
+  overflow: hidden;
+  transition: width 0.3s ease;
+}
+
+.splitActive .leftSection {
+  flex: 0 0 60%;
+}
+
+.splitActive .rightSection {
+  width: 40%;
+  background: #fdfdfd;
+}
