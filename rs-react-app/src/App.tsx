@@ -1,70 +1,27 @@
-import { useState, useEffect } from 'react';
-import { useLocalStorage } from './hooks/useLocalStorage';
+import { useState } from 'react';
 import classes from './App.module.css';
 import { CardsList } from './components/CountriesCardsList/CountriesCardsList';
 import { Search } from './components/Search/Search';
+import { Pagination } from './components/Pagination/Pagination';
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
 import { ErrorSimulator } from './components/ErrorSimulator/ErrorSimulator';
-import { fetchAllCountries, fetchCountriesByName } from './api/countriesApi';
-import type { ICountry } from './components/CountriesCardsList/CountriesCardsList';
+import { useLocalStorage } from './hooks/useLocalStorage';
+import { useCountries } from './hooks/useCountries';
 
 export default function App() {
   const [searchStr, setSearchStr] = useLocalStorage<string>('searchStr', '');
-  const [allCountries, setAllCountries] = useState<ICountry[]>([]);
-  const [searchResults, setSearchResults] = useState<ICountry[] | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastSearchedTerm, setLastSearchedTerm] = useState<string>('');
+
+  const {
+    countries,
+    isLoading,
+    error,
+    searchCountries,
+    currentPage,
+    totalPages,
+    setCurrentPage,
+  } = useCountries();
+
   const [simulateError, setSimulateError] = useState<boolean>(false);
-
-  useEffect(() => {
-    fetchAllCountries()
-      .then((data) => {
-        setAllCountries(data);
-        setIsLoading(false);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-        setIsLoading(false);
-      });
-  }, []);
-
-  const handleSearchChange = (newStr: string) => {
-    setSearchStr(newStr);
-  };
-
-  const handleSearch = (trimmedTerm: string) => {
-    if (trimmedTerm === lastSearchedTerm) {
-      return;
-    }
-
-    if (trimmedTerm === '') {
-      setSearchResults(null);
-      setLastSearchedTerm('');
-      setError(null);
-      return;
-    }
-
-    setLastSearchedTerm(trimmedTerm);
-    setIsLoading(true);
-    setError(null);
-
-    fetchCountriesByName(trimmedTerm)
-      .then((data) => {
-        setSearchResults(data);
-        setIsLoading(false);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-        setIsLoading(false);
-      });
-  };
-
-  const toggleError = () => {
-    setSimulateError((prev) => !prev);
-  };
-
-  const countries = searchResults !== null ? searchResults : allCountries;
 
   return (
     <>
@@ -76,21 +33,28 @@ export default function App() {
             <>
               <Search
                 searchStr={searchStr}
-                onSearchChange={handleSearchChange}
-                onSearch={handleSearch}
+                onSearchChange={setSearchStr}
+                onSearch={searchCountries}
               />
               <CardsList
                 countries={countries}
                 isLoading={isLoading}
                 error={error}
               />
+              {!isLoading && !error && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              )}
             </>
           )}
         </div>
       </ErrorBoundary>
 
       <button
-        onClick={toggleError}
+        onClick={() => setSimulateError((prev) => !prev)}
         style={{
           position: 'fixed',
           bottom: '2rem',
