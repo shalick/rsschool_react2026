@@ -120,7 +120,8 @@ describe('App', () => {
   });
 
   it('persists searchStr in localStorage and restores it', async () => {
-    localStorageMock.setItem('searchStr', 'germany');
+    // Store a valid JSON string (with quotes)
+    localStorageMock.setItem('searchStr', '"germany"');
     render(<App />);
     await waitFor(() => {
       expect(screen.getByTestId('search-input')).toHaveValue('germany');
@@ -135,9 +136,25 @@ describe('App', () => {
     );
     const searchInput = screen.getByTestId('search-input');
     await user.type(searchInput, 'france');
-    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+    // Expect the final call to be with the JSON‑stringified value
+    expect(localStorageMock.setItem).toHaveBeenLastCalledWith(
       'searchStr',
-      'france'
+      '"france"'
+    );
+  });
+
+  it('saves searchStr to localStorage on unmount', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<App />);
+    await waitFor(() =>
+      expect(screen.getByTestId('search-input')).toBeInTheDocument()
+    );
+    const searchInput = screen.getByTestId('search-input');
+    await user.type(searchInput, 'saved');
+    unmount();
+    expect(localStorageMock.setItem).toHaveBeenLastCalledWith(
+      'searchStr',
+      '"saved"'
     );
   });
 
@@ -272,7 +289,7 @@ describe('App', () => {
     unmount();
     expect(localStorageMock.setItem).toHaveBeenLastCalledWith(
       'searchStr',
-      'saved'
+      '"saved"'
     );
   });
 });

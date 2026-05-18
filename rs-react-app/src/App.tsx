@@ -1,4 +1,5 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocalStorage } from './hooks/useLocalStorage';
 import classes from './App.module.css';
 import { CardsList } from './components/CountriesCardsList/CountriesCardsList';
 import { Search } from './components/Search/Search';
@@ -7,147 +8,105 @@ import { ErrorSimulator } from './components/ErrorSimulator/ErrorSimulator';
 import { fetchAllCountries, fetchCountriesByName } from './api/countriesApi';
 import type { ICountry } from './components/CountriesCardsList/CountriesCardsList';
 
-interface AppState {
-  searchStr: string;
-  allCountries: ICountry[];
-  searchResults: ICountry[] | null;
-  isLoading: boolean;
-  error: string | null;
-  lastSearchedTerm: string;
-  simulateError: boolean;
-}
+export default function App() {
+  const [searchStr, setSearchStr] = useLocalStorage<string>('searchStr', '');
+  const [allCountries, setAllCountries] = useState<ICountry[]>([]);
+  const [searchResults, setSearchResults] = useState<ICountry[] | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastSearchedTerm, setLastSearchedTerm] = useState<string>('');
+  const [simulateError, setSimulateError] = useState<boolean>(false);
 
-class App extends Component<Record<string, never>, AppState> {
-  constructor(props: Record<string, never>) {
-    super(props);
-    const saved = localStorage.getItem('searchStr');
-    this.state = {
-      searchStr: saved || '',
-      allCountries: [],
-      searchResults: null,
-      isLoading: true,
-      error: null,
-      lastSearchedTerm: '',
-      simulateError: false,
-    };
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     fetchAllCountries()
-      .then((data) => this.setState({ allCountries: data, isLoading: false }))
-      .catch((error: Error) =>
-        this.setState({ error: error.message, isLoading: false })
-      );
-  }
+      .then((data) => {
+        setAllCountries(data);
+        setIsLoading(false);
+      })
+      .catch((err: Error) => {
+        setError(err.message);
+        setIsLoading(false);
+      });
+  }, []);
 
-  handleSearchChange = (newStr: string) => {
-    this.setState({ searchStr: newStr });
-    localStorage.setItem('searchStr', newStr);
+  const handleSearchChange = (newStr: string) => {
+    setSearchStr(newStr);
   };
 
-  handleSearch = (trimmedTerm: string) => {
-    const { lastSearchedTerm } = this.state;
-
+  const handleSearch = (trimmedTerm: string) => {
     if (trimmedTerm === lastSearchedTerm) {
       return;
     }
 
     if (trimmedTerm === '') {
-      this.setState({
-        searchResults: null,
-        lastSearchedTerm: '',
-        error: null,
-      });
+      setSearchResults(null);
+      setLastSearchedTerm('');
+      setError(null);
       return;
     }
 
-    this.setState({
-      lastSearchedTerm: trimmedTerm,
-      isLoading: true,
-      error: null,
-    });
+    setLastSearchedTerm(trimmedTerm);
+    setIsLoading(true);
+    setError(null);
 
     fetchCountriesByName(trimmedTerm)
       .then((data) => {
-        this.setState({
-          searchResults: data,
-          isLoading: false,
-        });
+        setSearchResults(data);
+        setIsLoading(false);
       })
-      .catch((error: Error) => {
-        this.setState({
-          error: error.message,
-          isLoading: false,
-        });
+      .catch((err: Error) => {
+        setError(err.message);
+        setIsLoading(false);
       });
   };
 
-  toggleError = () => {
-    this.setState((prevState) => ({
-      simulateError: !prevState.simulateError,
-    }));
+  const toggleError = () => {
+    setSimulateError((prev) => !prev);
   };
 
-  componentWillUnmount() {
-    localStorage.setItem('searchStr', this.state.searchStr);
-  }
+  const countries = searchResults !== null ? searchResults : allCountries;
 
-  render() {
-    const {
-      searchStr,
-      allCountries,
-      searchResults,
-      isLoading,
-      error,
-      simulateError,
-    } = this.state;
+  return (
+    <>
+      <ErrorBoundary key={String(simulateError)}>
+        <div className={classes.app}>
+          {simulateError ? (
+            <ErrorSimulator />
+          ) : (
+            <>
+              <Search
+                searchStr={searchStr}
+                onSearchChange={handleSearchChange}
+                onSearch={handleSearch}
+              />
+              <CardsList
+                countries={countries}
+                isLoading={isLoading}
+                error={error}
+              />
+            </>
+          )}
+        </div>
+      </ErrorBoundary>
 
-    const countries = searchResults !== null ? searchResults : allCountries;
-
-    return (
-      <>
-        <ErrorBoundary key={String(simulateError)}>
-          <div className={classes.app}>
-            {simulateError ? (
-              <ErrorSimulator />
-            ) : (
-              <>
-                <Search
-                  searchStr={searchStr}
-                  onSearchChange={this.handleSearchChange}
-                  onSearch={this.handleSearch}
-                />
-                <CardsList
-                  countries={countries}
-                  isLoading={isLoading}
-                  error={error}
-                />
-              </>
-            )}
-          </div>
-        </ErrorBoundary>
-
-        <button
-          onClick={this.toggleError}
-          style={{
-            position: 'fixed',
-            bottom: '2rem',
-            right: '2rem',
-            padding: '0.6rem 1.2rem',
-            background: '#ff6b6b',
-            color: 'white',
-            border: 'none',
-            borderRadius: '2rem',
-            cursor: 'pointer',
-            boxShadow: '0 0.5rem 1rem rgba(0,0,0,0.2)',
-            zIndex: 1000,
-          }}
-        >
-          {simulateError ? 'Reset Error Simulation' : 'Test Error Boundary'}
-        </button>
-      </>
-    );
-  }
+      <button
+        onClick={toggleError}
+        style={{
+          position: 'fixed',
+          bottom: '2rem',
+          right: '2rem',
+          padding: '0.6rem 1.2rem',
+          background: '#ff6b6b',
+          color: 'white',
+          border: 'none',
+          borderRadius: '2rem',
+          cursor: 'pointer',
+          boxShadow: '0 0.5rem 1rem rgba(0,0,0,0.2)',
+          zIndex: 1000,
+        }}
+      >
+        {simulateError ? 'Reset Error Simulation' : 'Test Error Boundary'}
+      </button>
+    </>
+  );
 }
-
-export default App;
