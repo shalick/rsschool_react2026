@@ -1,7 +1,3 @@
-import React from 'react';
-
-export const ErrorSimulator: React.FC = () => {
+export const ErrorSimulator = () => {
   throw new Error('Simulated error!');
-  /* istanbul ignore next */
-  return null;
 };

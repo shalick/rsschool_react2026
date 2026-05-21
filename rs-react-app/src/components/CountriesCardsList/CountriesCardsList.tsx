@@ -1,7 +1,7 @@
-import { Component } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { CountryCard } from '../CountryCard/CountryCard';
-import { Loader } from '../Loader/Loader';
 import classes from './CountriesCardsList.module.css';
+import { Loader } from '../Loader/Loader';
 
 export interface ICountry {
   cca3: string;
@@ -18,34 +18,39 @@ interface IProps {
   error: string | null;
 }
 
-export class CardsList extends Component<IProps> {
-  render() {
-    const { countries, isLoading, error } = this.props;
+export function CardsList({ countries, isLoading, error }: IProps) {
+  const location = useLocation();
 
-    if (isLoading) return <Loader />;
-
-    if (error) {
-      return (
-        <div className={classes.error}>
-          <p>⚠️ {error}</p>
-          <button onClick={() => window.location.reload()}>Retry</button>
-        </div>
-      );
-    }
-
+  if (isLoading) return <Loader />;
+  if (error) {
     return (
-      <ul className={classes.cardsContainer}>
-        {countries.map((country) => (
+      <div className={classes.error}>
+        <p>⚠️ {error}</p>
+        <button onClick={() => window.location.reload()}>Retry</button>
+      </div>
+    );
+  }
+
+  return (
+    <ul className={classes.cardsContainer}>
+      {countries.map((country) => (
+        <Link
+          key={country.cca3}
+          to={{
+            pathname: `/${country.cca3.toLowerCase()}`,
+            search: location.search,
+          }}
+          className={classes.cardLink}
+        >
           <CountryCard
-            key={country.cca3}
             name={country.name}
             flags={country.flags}
             capital={country.capital}
             region={country.region}
             population={country.population}
           />
-        ))}
-      </ul>
-    );
-  }
+        </Link>
+      ))}
+    </ul>
+  );
 }
