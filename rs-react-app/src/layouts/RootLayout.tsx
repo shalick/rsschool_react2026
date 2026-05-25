@@ -1,7 +1,15 @@
+import { useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import { useCountriesStore } from '../store/useCountriesStore';
+import { Flyout } from '../components/Flyout/Flyout';
 import classes from './RootLayout.module.css';
 
 export function RootLayout() {
+  const { fetchCountries } = useCountriesStore();
+  useEffect(() => {
+    fetchCountries();
+  }, [fetchCountries]);
+
   return (
     <div className={classes.layout}>
       <header className={classes.header}>
@@ -27,6 +35,7 @@ export function RootLayout() {
       <main className={classes.main}>
         <Outlet />
       </main>
+      <Flyout />
     </div>
   );
 }

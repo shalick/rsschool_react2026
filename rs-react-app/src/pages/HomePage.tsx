@@ -1,25 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useParams, useNavigate, useLocation } from 'react-router-dom';
-import classes from './HomePage.module.css';
+import { useCountriesStore } from '../store/useCountriesStore';
 import { CardsList } from '../components/CountriesCardsList/CountriesCardsList';
 import { Search } from '../components/Search/Search';
 import { Pagination } from '../components/Pagination/Pagination';
 import { ErrorBoundary } from '../components/ErrorBoundary/ErrorBoundary';
 import { ErrorSimulator } from '../components/ErrorSimulator/ErrorSimulator';
-import { useCountries } from '../hooks/useCountries';
+import classes from './HomePage.module.css';
+import type { ICountry } from '../components/CountriesCardsList/CountriesCardsList';
 
 export function HomePage() {
-  const {
-    countries,
-    isLoading,
-    error,
-    searchStr,
-    changeSearch,
-    currentPage,
-    totalPages,
-    setPage,
-  } = useCountries();
-  const [simulateError, setSimulateError] = useState(false);
+  const { countries, isLoading, error } = useCountriesStore();
+
+  const [searchStr, setSearchStr] = useState('');
+  const [filteredCountries, setFilteredCountries] = useState<ICountry[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+
+  useEffect(() => {
+    if (!searchStr.trim()) {
+      setFilteredCountries(countries);
+    } else {
+      const filtered = countries.filter((c) =>
+        c.name.common.toLowerCase().includes(searchStr.toLowerCase())
+      );
+      setFilteredCountries(filtered);
+    }
+    setCurrentPage(1);
+  }, [searchStr, countries]);
+
+  const totalPages = Math.ceil(filteredCountries.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedCountries = filteredCountries.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  const changeSearch = (value: string) => {
+    setSearchStr(value);
+  };
+
+  const setPage = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const { countryCode } = useParams();
   const navigate = useNavigate();
@@ -33,6 +57,8 @@ export function HomePage() {
       navigate({ pathname: '/', search: location.search });
     }
   };
+
+  const [simulateError, setSimulateError] = useState(false);
 
   return (
     <>
@@ -52,11 +78,11 @@ export function HomePage() {
                   onSearch={(val) => changeSearch(val)}
                 />
                 <CardsList
-                  countries={countries}
+                  countries={paginatedCountries}
                   isLoading={isLoading}
                   error={error}
                 />
-                {!isLoading && !error && (
+                {!isLoading && !error && totalPages > 1 && (
                   <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
@@ -89,10 +115,7 @@ export function HomePage() {
           cursor: 'pointer',
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           zIndex: 2000,
-          transition: 'background-color 0.2s ease, transform 0.1s ease',
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.03)')}
-        onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
       >
         {simulateError ? '🔄 Reset Error Simulation' : '⚠️ Test Error Boundary'}
       </button>
