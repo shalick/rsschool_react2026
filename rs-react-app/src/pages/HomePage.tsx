@@ -99,26 +99,6 @@ export function HomePage() {
           )}
         </div>
       </ErrorBoundary>
-
-      <button
-        onClick={() => setSimulateError((prev) => !prev)}
-        style={{
-          position: 'fixed',
-          bottom: '2rem',
-          left: '2rem',
-          padding: '0.75rem 1.5rem',
-          background: simulateError ? '#42ba96' : '#ff6b6b',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          zIndex: 2000,
-        }}
-      >
-        {simulateError ? '🔄 Reset Error Simulation' : '⚠️ Test Error Boundary'}
-      </button>
     </>
   );
 }

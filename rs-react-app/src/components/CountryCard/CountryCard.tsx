@@ -38,14 +38,6 @@ export const CountryCard = ({
 
   return (
     <li className={classes.country} onClick={handleCardClick}>
-      <div className={classes.checkboxContainer}>
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={handleCheckboxChange}
-          onClick={(e) => e.stopPropagation()}
-        />
-      </div>
       <img
         src={flags.svg}
         alt={flags.alt || `Flag of ${name.common}`}
@@ -64,6 +56,14 @@ export const CountryCard = ({
             <strong>Capital:</strong> {capital ? capital[0] : 'N/A'}
           </p>
         </div>
+      </div>
+      <div className={classes.checkboxContainer}>
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={handleCheckboxChange}
+          onClick={(e) => e.stopPropagation()}
+        />
       </div>
     </li>
   );

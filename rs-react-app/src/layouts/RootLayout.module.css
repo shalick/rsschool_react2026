@@ -14,21 +14,9 @@
   border-bottom: 1px solid var(--border-color);
 }
 
-.link {
-  color: var(--link-color);
-}
-
-.activeLink {
-  color: var(--link-hover);
-}
-
 .nav {
   display: flex;
   gap: 1.5rem;
-}
-
-.link:hover {
-  color: #fff;
 }
 
 .header {
@@ -41,4 +29,21 @@
 .actions {
   display: flex;
   gap: 1rem;
+}
+
+.link {
+  color: var(--link-color);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.link:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
+}
+
+.activeLink {
+  color: var(--link-hover);
+  font-weight: bold;
+  text-decoration: underline;
 }
