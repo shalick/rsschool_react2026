@@ -1,6 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
 import { CountryCard } from './CountryCard';
-import { describe, expect, it, vi } from 'vitest';
+import { useSelectionStore } from '../../store/useSelectionStore';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 vi.mock('./CountryCard.module.css', () => ({
   default: {
@@ -8,11 +10,26 @@ vi.mock('./CountryCard.module.css', () => ({
     flag: 'flag',
     countryInfo: 'countryInfo',
     details: 'details',
+    checkboxContainer: 'checkboxContainer',
   },
 }));
 
+vi.mock('../../store/useSelectionStore', () => ({
+  useSelectionStore: vi.fn(),
+}));
+
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
 describe('CountryCard', () => {
   const mockCountry = {
+    cca3: 'DEU',
     name: { common: 'Germany', official: 'Federal Republic of Germany' },
     flags: {
       png: 'https://flagcdn.com',
@@ -24,8 +41,24 @@ describe('CountryCard', () => {
     population: 83200000,
   };
 
+  const mockToggleSelection = vi.fn();
+  const mockSelectedIds = new Set<string>();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSelectedIds.clear();
+    (useSelectionStore as any).mockReturnValue({
+      selectedIds: mockSelectedIds,
+      toggleSelection: mockToggleSelection,
+    });
+  });
+
+  const renderWithRouter = (component: React.ReactElement) => {
+    return render(<BrowserRouter>{component}</BrowserRouter>);
+  };
+
   it('renders country name, flag, population, region, and capital', () => {
-    render(<CountryCard {...mockCountry} />);
+    renderWithRouter(<CountryCard {...mockCountry} />);
 
     expect(screen.getByText('Germany')).toBeInTheDocument();
 
@@ -33,10 +66,9 @@ describe('CountryCard', () => {
     expect(flagImg).toHaveAttribute('src', mockCountry.flags.svg);
 
     expect(screen.getByText(/Population:/)).toBeInTheDocument();
-
     expect(
       screen.getByText((content) =>
-        content.replace(/\s/g, '').includes('83200000')
+        content.replace(/\D/g, '').includes('83200000')
       )
     ).toBeInTheDocument();
 
@@ -52,32 +84,66 @@ describe('CountryCard', () => {
       ...mockCountry,
       flags: { ...mockCountry.flags, alt: undefined },
     };
-    render(<CountryCard {...countryWithoutAlt} />);
+    renderWithRouter(<CountryCard {...countryWithoutAlt} />);
     expect(screen.getByAltText('Flag of Germany')).toBeInTheDocument();
   });
 
   it('renders correctly when capital array is empty', () => {
     const countryEmptyCapital = { ...mockCountry, capital: [] };
-    render(<CountryCard {...countryEmptyCapital} />);
-
+    renderWithRouter(<CountryCard {...countryEmptyCapital} />);
     expect(screen.queryByText('Berlin')).not.toBeInTheDocument();
     expect(screen.getByText(/Capital:/)).toBeInTheDocument();
   });
 
   it('renders "N/A" for capital when capital is undefined', () => {
     const countryUndefinedCapital = { ...mockCountry, capital: undefined };
-    render(<CountryCard {...countryUndefinedCapital} />);
+    renderWithRouter(<CountryCard {...countryUndefinedCapital} />);
     expect(screen.getByText('N/A')).toBeInTheDocument();
   });
 
   it('formats large population correctly based on current locale', () => {
     const countryLargePop = { ...mockCountry, population: 1234567890 };
-    render(<CountryCard {...countryLargePop} />);
-
+    renderWithRouter(<CountryCard {...countryLargePop} />);
     expect(
       screen.getByText((content) =>
         content.replace(/\s/g, '').includes('1234567890')
       )
     ).toBeInTheDocument();
+  });
+
+  it('displays checkbox and shows selected state when country is selected', () => {
+    mockSelectedIds.add('DEU');
+    (useSelectionStore as any).mockReturnValue({
+      selectedIds: mockSelectedIds,
+      toggleSelection: mockToggleSelection,
+    });
+
+    renderWithRouter(<CountryCard {...mockCountry} />);
+    const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
+    expect(checkbox.checked).toBe(true);
+  });
+
+  it('toggles selection when checkbox is clicked', () => {
+    renderWithRouter(<CountryCard {...mockCountry} />);
+    const checkbox = screen.getByRole('checkbox');
+    fireEvent.click(checkbox);
+    expect(mockToggleSelection).toHaveBeenCalledWith('DEU');
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('navigates to details page when card (outside checkbox) is clicked', () => {
+    renderWithRouter(<CountryCard {...mockCountry} currentSearch="?page=2" />);
+    const card = screen.getByRole('listitem');
+    fireEvent.click(card);
+    expect(mockNavigate).toHaveBeenCalledWith('/deu?page=2');
+    expect(mockToggleSelection).not.toHaveBeenCalled();
+  });
+
+  it('prevents navigation when checkbox is clicked (stopPropagation works)', () => {
+    renderWithRouter(<CountryCard {...mockCountry} />);
+    const checkbox = screen.getByRole('checkbox');
+    fireEvent.click(checkbox);
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockToggleSelection).toHaveBeenCalledWith('DEU');
   });
 });

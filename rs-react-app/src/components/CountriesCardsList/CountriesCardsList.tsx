@@ -1,15 +1,16 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { CountryCard } from '../CountryCard/CountryCard';
 import classes from './CountriesCardsList.module.css';
 import { Loader } from '../Loader/Loader';
 
 export interface ICountry {
   cca3: string;
-  name: { common: string };
+  name: { common: string; official?: string };
   flags: { png: string; svg: string; alt?: string };
   capital?: string[];
   region: string;
   population: number;
+  subregion?: string;
 }
 
 interface IProps {
@@ -34,22 +35,11 @@ export function CardsList({ countries, isLoading, error }: IProps) {
   return (
     <ul className={classes.cardsContainer}>
       {countries.map((country) => (
-        <Link
+        <CountryCard
           key={country.cca3}
-          to={{
-            pathname: `/${country.cca3.toLowerCase()}`,
-            search: location.search,
-          }}
-          className={classes.cardLink}
-        >
-          <CountryCard
-            name={country.name}
-            flags={country.flags}
-            capital={country.capital}
-            region={country.region}
-            population={country.population}
-          />
-        </Link>
+          {...country}
+          currentSearch={location.search}
+        />
       ))}
     </ul>
   );

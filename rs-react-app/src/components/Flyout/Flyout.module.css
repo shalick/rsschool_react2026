@@ -1,0 +1,97 @@
+.flyout {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 1rem 2rem;
+  border-radius: 60px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  background-color: rgba(44, 62, 80, 0.95);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateX(-50%) translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.content {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.count {
+  font-weight: bold;
+  font-size: 1rem;
+  color: var(--text-inverted);
+}
+
+.buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.unselectBtn,
+.downloadBtn {
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  font-weight: 600;
+  transition:
+    transform 0.1s ease,
+    background 0.2s;
+}
+
+.unselectBtn {
+  background: #e74c3c;
+  color: white;
+}
+
+.unselectBtn:hover {
+  background: #c0392b;
+  transform: scale(1.02);
+}
+
+.downloadBtn {
+  background: #3498db;
+  color: white;
+}
+
+.downloadBtn:hover {
+  background: #2980b9;
+  transform: scale(1.02);
+}
+
+@media (max-width: 640px) {
+  .flyout {
+    bottom: 1rem;
+    width: 90%;
+    padding: 0.8rem 1.2rem;
+  }
+  .content {
+    gap: 0.8rem;
+  }
+  .buttons {
+    gap: 0.6rem;
+  }
+  .unselectBtn,
+  .downloadBtn {
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+  }
+}
