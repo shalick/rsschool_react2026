@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { CountryCard } from '../CountryCard/CountryCard';
 import classes from './CountriesCardsList.module.css';
 import { Loader } from '../Loader/Loader';
@@ -17,15 +17,9 @@ interface IProps {
   countries: ICountry[];
   isLoading: boolean;
   error: string | null;
-  onOpenDetails?: (id: string) => void;
 }
 
-export function CardsList({
-  countries,
-  isLoading,
-  error,
-  onOpenDetails,
-}: IProps) {
+export function CardsList({ countries, isLoading, error }: IProps) {
   const location = useLocation();
 
   if (isLoading) return <Loader />;
@@ -41,20 +35,11 @@ export function CardsList({
   return (
     <ul className={classes.cardsContainer}>
       {countries.map((country) => (
-        <Link
+        <CountryCard
           key={country.cca3}
-          to={{
-            pathname: `/${country.cca3.toLowerCase()}`,
-            search: location.search,
-          }}
-          className={classes.cardLink}
-        >
-          <CountryCard
-            key={country.cca3}
-            {...country}
-            onOpenDetails={onOpenDetails}
-          />
-        </Link>
+          {...country}
+          currentSearch={location.search}
+        />
       ))}
     </ul>
   );

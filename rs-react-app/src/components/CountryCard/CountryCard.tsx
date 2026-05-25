@@ -1,22 +1,16 @@
-import classes from './CountryCard.module.css';
+import { useNavigate } from 'react-router-dom';
 import { useSelectionStore } from '../../store/useSelectionStore';
+import classes from './CountryCard.module.css';
 
 interface ICountryCard {
   cca3: string;
-  name: {
-    common: string;
-    official?: string;
-  };
-  flags: {
-    png: string;
-    svg: string;
-    alt?: string;
-  };
+  name: { common: string; official?: string };
+  flags: { png: string; svg: string; alt?: string };
   capital?: string[];
   region: string;
   population: number;
   subregion?: string;
-  onOpenDetails?: (id: string) => void;
+  currentSearch?: string;
 }
 
 export const CountryCard = ({
@@ -26,29 +20,29 @@ export const CountryCard = ({
   capital,
   region,
   population,
-  onOpenDetails,
+  currentSearch = '',
 }: ICountryCard) => {
+  const navigate = useNavigate();
   const { selectedIds, toggleSelection } = useSelectionStore();
   const isSelected = selectedIds.has(cca3);
 
-  const handleCheckboxChange = (e: React.MouseEvent | React.ChangeEvent) => {
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     toggleSelection(cca3);
   };
 
-  const handleCardClick = () => {
-    if (onOpenDetails) {
-      onOpenDetails(cca3);
-    }
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/${cca3.toLowerCase()}${currentSearch}`);
   };
 
   return (
     <li className={classes.country} onClick={handleCardClick}>
-      <div className={classes.checkboxContainer} onClick={handleCheckboxChange}>
+      <div className={classes.checkboxContainer}>
         <input
           type="checkbox"
           checked={isSelected}
-          onChange={() => {}}
+          onChange={handleCheckboxChange}
           onClick={(e) => e.stopPropagation()}
         />
       </div>
