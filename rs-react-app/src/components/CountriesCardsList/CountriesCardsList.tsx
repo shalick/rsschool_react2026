@@ -5,20 +5,27 @@ import { Loader } from '../Loader/Loader';
 
 export interface ICountry {
   cca3: string;
-  name: { common: string };
+  name: { common: string; official?: string };
   flags: { png: string; svg: string; alt?: string };
   capital?: string[];
   region: string;
   population: number;
+  subregion?: string;
 }
 
 interface IProps {
   countries: ICountry[];
   isLoading: boolean;
   error: string | null;
+  onOpenDetails?: (id: string) => void;
 }
 
-export function CardsList({ countries, isLoading, error }: IProps) {
+export function CardsList({
+  countries,
+  isLoading,
+  error,
+  onOpenDetails,
+}: IProps) {
   const location = useLocation();
 
   if (isLoading) return <Loader />;
@@ -43,11 +50,9 @@ export function CardsList({ countries, isLoading, error }: IProps) {
           className={classes.cardLink}
         >
           <CountryCard
-            name={country.name}
-            flags={country.flags}
-            capital={country.capital}
-            region={country.region}
-            population={country.population}
+            key={country.cca3}
+            {...country}
+            onOpenDetails={onOpenDetails}
           />
         </Link>
       ))}

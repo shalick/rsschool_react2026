@@ -1,15 +1,14 @@
-/* CountryCard.module.css */
-
 .country {
   position: relative;
   background-color: var(--secondary-color, #fff);
   border-radius: 0.5rem;
   box-shadow: 0 0.2rem 0.7rem rgba(0, 0, 0, 0.03);
   overflow: hidden;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
-/* Invisible second shadow on hover */
 .country::after {
   content: '';
   position: absolute;
@@ -65,4 +64,14 @@
 
 .details strong {
   font-weight: 600;
+}
+
+.country {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.checkboxContainer {
+  margin-right: 1rem;
+  cursor: pointer;
 }
