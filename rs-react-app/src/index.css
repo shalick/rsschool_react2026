@@ -7,17 +7,52 @@
 }
 
 :root {
-  --primary-color: #f0f0f0;
-  --secondary-color: #ffffff;
-  --text-color: #111517;
-  --accent: #c084fc;           /* a purple for light mode */
-  --accent-bg: rgba(192,132,252,0.15);
-  --accent-border: rgba(192,132,252,0.5);
-  --shadow: 0 0.2rem 0.7rem rgba(0,0,0,0.03);
-  font-family: 'Nunito Sans', sans-serif;
-  font-size: 16px;
-  color: var(--text-color);
-  background: var(--primary-color);
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --text-primary: #213547;
+  --text-secondary: #4a5568;
+  --border-color: #e2e8f0;
+  --card-bg: #ffffff;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --header-bg: #f8f9fa;
+  --button-bg: #e2e8f0;
+  --button-hover: #cbd5e1;
+  --link-color: #646cff;
+  --link-hover: #535bf2;
+}
+
+[data-theme='dark'] {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0aec0;
+  --border-color: #4a5568;
+  --card-bg: #2d2d2d;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --header-bg: #2c2c2c;
+  --button-bg: #4a5568;
+  --button-hover: #718096;
+  --link-color: #8b9dff;
+  --link-hover: #a0b4ff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    sans-serif;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -26,8 +61,8 @@
     --secondary-color: #2b3945;
     --text-color: #ffffff;
     --accent: #c084fc;
-    --accent-bg: rgba(192,132,252,0.2);
-    --shadow: 0 0.2rem 0.7rem rgba(0,0,0,0.15);
+    --accent-bg: rgba(192, 132, 252, 0.2);
+    --shadow: 0 0.2rem 0.7rem rgba(0, 0, 0, 0.15);
   }
 }
 

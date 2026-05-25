@@ -66,12 +66,22 @@
   font-weight: 600;
 }
 
-.country {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
 .checkboxContainer {
   margin-right: 1rem;
   cursor: pointer;
+}
+
+.country {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  box-shadow: var(--card-shadow);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.country:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }

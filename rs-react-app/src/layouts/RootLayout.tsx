@@ -1,11 +1,13 @@
-import { useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import { ThemeToggle } from '../components/ThemeToggle/ThemeToggle';
 import { useCountriesStore } from '../store/useCountriesStore';
+import { useEffect } from 'react';
 import { Flyout } from '../components/Flyout/Flyout';
 import classes from './RootLayout.module.css';
 
 export function RootLayout() {
   const { fetchCountries } = useCountriesStore();
+
   useEffect(() => {
     fetchCountries();
   }, [fetchCountries]);
@@ -31,6 +33,9 @@ export function RootLayout() {
             About
           </NavLink>
         </nav>
+        <div className={classes.actions}>
+          <ThemeToggle />
+        </div>
       </header>
       <main className={classes.main}>
         <Outlet />

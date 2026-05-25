@@ -3,8 +3,9 @@
   bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
-  background: #2c3e50;
-  color: white;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   padding: 1rem 2rem;
   border-radius: 60px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
