@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { RootLayout } from './RootLayout';
 import { describe, expect, it, vi } from 'vitest';
 
+// Mock CSS module
 vi.mock('./RootLayout.module.css', () => ({
   default: {
     layout: 'layout',
@@ -11,7 +12,25 @@ vi.mock('./RootLayout.module.css', () => ({
     link: 'link',
     activeLink: 'activeLink',
     main: 'main',
+    actions: 'actions',
   },
+}));
+
+// Mock the countries store
+vi.mock('../store/useCountriesStore', () => ({
+  useCountriesStore: vi.fn(() => ({
+    fetchCountries: vi.fn(),
+  })),
+}));
+
+// Mock ThemeToggle component to avoid context dependency
+vi.mock('../components/ThemeToggle/ThemeToggle', () => ({
+  ThemeToggle: () => <div data-testid="theme-toggle">Theme Toggle</div>,
+}));
+
+// Mock Flyout component
+vi.mock('../components/Flyout/Flyout', () => ({
+  Flyout: () => <div data-testid="flyout">Flyout</div>,
 }));
 
 describe('RootLayout Component', () => {
@@ -76,5 +95,16 @@ describe('RootLayout Component', () => {
 
     expect(screen.getByTestId('child-view')).toBeInTheDocument();
     expect(screen.getByText('Dashboard Content')).toBeInTheDocument();
+  });
+
+  it('should render the ThemeToggle and Flyout components', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <RootLayout />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('theme-toggle')).toBeInTheDocument();
+    expect(screen.getByTestId('flyout')).toBeInTheDocument();
   });
 });

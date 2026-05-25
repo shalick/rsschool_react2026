@@ -22,8 +22,10 @@ export const useCountriesStore = create<CountriesState>((set, get) => ({
     try {
       const data = await fetchAllCountries();
       set({ countries: data, isLoading: false });
-    } catch (err: any) {
-      set({ error: err.message, isLoading: false });
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An unknown error occurred';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 }));
