@@ -1,7 +1,5 @@
 import type { ICountry } from '../components/CountriesCardsList/CountriesCardsList';
 
-const BASE_URL = 'https://restcountries.com';
-
 const getErrorMessage = (status: number): string => {
   switch (true) {
     case status === 400:
@@ -18,10 +16,10 @@ const getErrorMessage = (status: number): string => {
 };
 
 export async function fetchAllCountries(): Promise<ICountry[]> {
-  const url = `${BASE_URL}/api/v3.1/all?fields=name,flags,capital,region,population,cca3`;
+  const url =
+    'https://restcountries.com/v3.1/all?fields=name,flags,capital,region,population,cca3';
 
   let response: Response;
-
   try {
     response = await fetch(url);
   } catch {
@@ -39,7 +37,7 @@ export async function fetchAllCountries(): Promise<ICountry[]> {
 }
 
 export async function fetchCountriesByName(name: string): Promise<ICountry[]> {
-  const url = `${BASE_URL}/api/v3.1/name/${encodeURIComponent(name)}?fields=name,flags,capital,region,population,cca3`;
+  const url = `https://restcountries.com/v3.1/name/${encodeURIComponent(name)}?fields=name,flags,capital,region,population,cca3`;
 
   let response: Response;
   try {
