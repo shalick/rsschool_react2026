@@ -10,7 +10,7 @@
     "lint:fix": "npm run lint -- --fix",
     "preview": "vite preview",
     "format": "prettier --write .",
-    "prepare": "husky && chmod ug+x .husky/*",
+    "prepare": "husky || true",
     "test": "vitest",
     "coverage": "vitest run --coverage"
   },
