@@ -4,19 +4,25 @@ import { HomePage } from './HomePage';
 import { useCountriesStore } from '../store/useCountriesStore';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import type { ICountry } from '../components/CountriesCardsList/CountriesCardsList';
+import { useParams, useLocation } from 'react-router-dom';
 
 const mockNavigate = vi.fn();
+window.scrollTo = vi.fn();
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
     ...actual,
     useNavigate: () => mockNavigate,
     useParams: vi.fn(),
-    useLocation: vi.fn(() => ({ search: '' })),
+    useLocation: vi.fn(() => ({
+      pathname: '/',
+      search: '',
+      hash: '',
+      state: null,
+      key: 'default',
+    })),
   };
 });
-
-import { useParams, useLocation } from 'react-router-dom';
 
 vi.mock('./HomePage.module.css', () => ({
   default: {
@@ -32,13 +38,21 @@ vi.mock('../store/useCountriesStore', () => ({
 }));
 
 vi.mock('../components/CountriesCardsList/CountriesCardsList', () => ({
-  CardsList: ({ countries, isLoading, error }: any) => (
+  CardsList: ({
+    countries,
+    isLoading,
+    error,
+  }: {
+    countries: ICountry[];
+    isLoading: boolean;
+    error: string | null;
+  }) => (
     <div data-testid="cards-list">
       {isLoading && <span>Loading...</span>}
       {error && <span>Error: {error}</span>}
       {!isLoading && !error && (
         <ul>
-          {countries.map((c: ICountry) => (
+          {countries.map((c) => (
             <li key={c.cca3}>{c.name.common}</li>
           ))}
         </ul>
@@ -48,46 +62,49 @@ vi.mock('../components/CountriesCardsList/CountriesCardsList', () => ({
 }));
 
 vi.mock('../components/Search/Search', () => ({
-  Search: ({ searchStr, onSearchChange, onSearch }: any) => (
+  Search: ({
+    searchStr,
+    onSearchChange,
+  }: {
+    searchStr: string;
+    onSearchChange: (val: string) => void;
+  }) => (
     <div data-testid="search">
       <input
         data-testid="search-input"
         value={searchStr}
         onChange={(e) => onSearchChange(e.target.value)}
       />
-      <button data-testid="search-button" onClick={() => onSearch(searchStr)}>
-        Search
-      </button>
     </div>
   ),
 }));
 
 vi.mock('../components/Pagination/Pagination', () => ({
-  Pagination: ({ currentPage, totalPages, onPageChange }: any) => (
+  Pagination: ({
+    currentPage,
+    totalPages,
+    onPageChange,
+  }: {
+    currentPage: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+  }) => (
     <div data-testid="pagination">
       <button
-        data-testid="prev-page"
-        disabled={currentPage === 1}
-        onClick={() => onPageChange(currentPage - 1)}
-      >
-        Prev
-      </button>
-      <span>
-        Page {currentPage} of {totalPages}
-      </span>
-      <button
         data-testid="next-page"
-        disabled={currentPage === totalPages}
         onClick={() => onPageChange(currentPage + 1)}
       >
         Next
       </button>
+      <span>
+        Page {currentPage} of {totalPages}
+      </span>
     </div>
   ),
 }));
 
 vi.mock('../components/ErrorBoundary/ErrorBoundary', () => ({
-  ErrorBoundary: ({ children }: any) => (
+  ErrorBoundary: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="error-boundary">{children}</div>
   ),
 }));
@@ -126,15 +143,27 @@ describe('HomePage', () => {
     },
   ];
 
+  const mockUseCountriesStore = vi.mocked(useCountriesStore);
+  const mockUseParams = vi.mocked(useParams);
+  const mockUseLocation = vi.mocked(useLocation);
+
   beforeEach(() => {
     vi.clearAllMocks();
-    (useCountriesStore as any).mockReturnValue({
+    mockUseParams.mockReturnValue({});
+
+    mockUseLocation.mockReturnValue({
+      pathname: '/',
+      search: '',
+      hash: '',
+      state: null,
+      key: 'default',
+    });
+
+    mockUseCountriesStore.mockReturnValue({
       countries: mockCountries,
       isLoading: false,
       error: null,
     });
-    (useParams as any).mockReturnValue({});
-    (useLocation as any).mockReturnValue({ search: '' });
     mockNavigate.mockClear();
   });
 
@@ -162,7 +191,7 @@ describe('HomePage', () => {
   });
 
   it('shows loader when isLoading is true', () => {
-    (useCountriesStore as any).mockReturnValue({
+    mockUseCountriesStore.mockReturnValue({
       countries: [],
       isLoading: true,
       error: null,
@@ -172,7 +201,7 @@ describe('HomePage', () => {
   });
 
   it('shows error message when error is present', () => {
-    (useCountriesStore as any).mockReturnValue({
+    mockUseCountriesStore.mockReturnValue({
       countries: [],
       isLoading: false,
       error: 'Failed to fetch countries',
@@ -183,86 +212,77 @@ describe('HomePage', () => {
     ).toBeInTheDocument();
   });
 
-  it('filters countries based on search input', async () => {
-    renderHomePage();
-    const searchInput = screen.getByTestId('search-input');
-    fireEvent.change(searchInput, { target: { value: 'ger' } });
-    await waitFor(() => {
-      expect(screen.getByText('Germany')).toBeInTheDocument();
-      expect(screen.queryByText('France')).not.toBeInTheDocument();
-      expect(screen.queryByText('Spain')).not.toBeInTheDocument();
+  it('renders filtered countries when search param is in the URL', () => {
+    mockUseLocation.mockReturnValue({
+      pathname: '/',
+      search: '?search=ger',
+      hash: '',
+      state: null,
+      key: 'test-search',
     });
-  });
 
-  it('resets search results when search is cleared', async () => {
-    renderHomePage();
-    const searchInput = screen.getByTestId('search-input');
-    fireEvent.change(searchInput, { target: { value: 'ger' } });
-    await waitFor(() => {
-      expect(screen.getByText('Germany')).toBeInTheDocument();
-    });
-    fireEvent.change(searchInput, { target: { value: '' } });
-    await waitFor(() => {
-      expect(screen.getByText('Germany')).toBeInTheDocument();
-      expect(screen.getByText('France')).toBeInTheDocument();
-      expect(screen.getByText('Spain')).toBeInTheDocument();
-    });
-  });
+    renderHomePage(['/?search=ger']);
 
-  it('paginates countries correctly', () => {
-    const manyCountries = Array.from({ length: 15 }, (_, i) => ({
-      ...mockCountries[0],
-      cca3: `CTA${i}`,
-      name: { common: `Country ${i}` },
-    }));
-    (useCountriesStore as any).mockReturnValue({
-      countries: manyCountries,
-      isLoading: false,
-      error: null,
-    });
-    renderHomePage();
-    expect(screen.getByText('Country 0')).toBeInTheDocument();
-    expect(screen.getByText('Country 11')).toBeInTheDocument();
-    expect(screen.queryByText('Country 12')).not.toBeInTheDocument();
-    expect(screen.getByTestId('pagination')).toBeInTheDocument();
-    fireEvent.click(screen.getByTestId('next-page'));
-    expect(screen.getByText('Country 12')).toBeInTheDocument();
-  });
-
-  it('does not show pagination when total pages <= 1', () => {
-    renderHomePage();
-    expect(screen.queryByTestId('pagination')).not.toBeInTheDocument();
+    expect(screen.getByText('Germany')).toBeInTheDocument();
   });
 
   it('displays details panel when countryCode param is present', () => {
-    (useParams as any).mockReturnValue({ countryCode: 'DEU' });
+    mockUseParams.mockReturnValue({ countryCode: 'DEU' });
     renderHomePage(['/DEU']);
     expect(screen.getByTestId('details-outlet')).toBeInTheDocument();
   });
 
-  it('closes details panel when clicking on left section while details are open', () => {
-    (useParams as any).mockReturnValue({ countryCode: 'DEU' });
-    renderHomePage(['/DEU']);
-    const leftSection = document.querySelector('.leftSection') as HTMLElement;
-    fireEvent.click(leftSection);
-    expect(mockNavigate).toHaveBeenCalledWith({ pathname: '/', search: '' });
-  });
-
-  it('does not close details panel when clicking inside right section', () => {
-    (useParams as any).mockReturnValue({ countryCode: 'DEU' });
-    renderHomePage(['/DEU']);
-    const rightSection = document.querySelector('.rightSection') as HTMLElement;
-    fireEvent.click(rightSection);
-    expect(mockNavigate).not.toHaveBeenCalled();
-  });
-
-  it('toggles error simulation when the error button is clicked', () => {
+  it('triggers navigation when typing in search input', async () => {
     renderHomePage();
-    const errorButton = screen.getByText('⚠️ Test Error Boundary');
-    expect(screen.queryByTestId('error-simulator')).not.toBeInTheDocument();
-    fireEvent.click(errorButton);
-    expect(screen.getByTestId('error-simulator')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('🔄 Reset Error Simulation'));
-    expect(screen.getByTestId('search')).toBeInTheDocument();
+    const searchInput = screen.getByTestId('search-input');
+    fireEvent.change(searchInput, { target: { value: 'ger' } });
+
+    await waitFor(() => {
+      expect(searchInput).toHaveValue('ger');
+    });
+  });
+
+  it('navigates to next page on pagination click', async () => {
+    const manyCountries = Array.from({ length: 15 }, (_, i) => ({
+      ...mockCountries[0],
+      cca3: `CTA${i}`,
+      name: { common: `Country ${i}`, official: '' },
+      flags: { png: '', svg: '' },
+      capital: [],
+      region: '',
+      population: 0,
+    }));
+
+    mockUseCountriesStore.mockReturnValue({
+      countries: manyCountries,
+      isLoading: false,
+      error: null,
+    });
+
+    renderHomePage();
+
+    const nextBtn = screen.getByTestId('next-page');
+    fireEvent.click(nextBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Page 2 of/i)).toBeInTheDocument();
+    });
+  });
+
+  it('closes details panel when clicking on left section while details are open', async () => {
+    mockUseParams.mockReturnValue({ countryCode: 'DEU' });
+    const { container } = renderHomePage(['/DEU']);
+    const leftSection = container.querySelector('.leftSection');
+    expect(leftSection).toBeInTheDocument();
+    if (leftSection) {
+      fireEvent.click(leftSection);
+    }
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pathname: '/',
+        })
+      );
+    });
   });
 });

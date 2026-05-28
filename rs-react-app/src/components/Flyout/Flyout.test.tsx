@@ -46,17 +46,20 @@ describe('Flyout', () => {
     },
   ];
 
+  const mockUseSelectionStore = vi.mocked(useSelectionStore);
+  const mockUseCountriesStore = vi.mocked(useCountriesStore);
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
   });
 
   it('returns null when no items are selected', () => {
-    (useSelectionStore as any).mockReturnValue({
+    mockUseSelectionStore.mockReturnValue({
       selectedIds: new Set(),
       clearSelections: mockClearSelections,
     });
-    (useCountriesStore as any).mockReturnValue({
+    mockUseCountriesStore.mockReturnValue({
       countries: mockCountries,
     });
     const { container } = render(<Flyout />);
@@ -64,11 +67,11 @@ describe('Flyout', () => {
   });
 
   it('renders the flyout when at least one item is selected', () => {
-    (useSelectionStore as any).mockReturnValue({
+    mockUseSelectionStore.mockReturnValue({
       selectedIds: new Set(['DEU']),
       clearSelections: mockClearSelections,
     });
-    (useCountriesStore as any).mockReturnValue({
+    mockUseCountriesStore.mockReturnValue({
       countries: mockCountries,
     });
     render(<Flyout />);
@@ -82,11 +85,11 @@ describe('Flyout', () => {
   });
 
   it('displays correct pluralization for multiple selected items', () => {
-    (useSelectionStore as any).mockReturnValue({
+    mockUseSelectionStore.mockReturnValue({
       selectedIds: new Set(['DEU', 'FRA']),
       clearSelections: mockClearSelections,
     });
-    (useCountriesStore as any).mockReturnValue({
+    mockUseCountriesStore.mockReturnValue({
       countries: mockCountries,
     });
     const { container } = render(<Flyout />);
@@ -97,11 +100,11 @@ describe('Flyout', () => {
   });
 
   it('calls clearSelections when "Unselect all" button is clicked', () => {
-    (useSelectionStore as any).mockReturnValue({
+    mockUseSelectionStore.mockReturnValue({
       selectedIds: new Set(['DEU']),
       clearSelections: mockClearSelections,
     });
-    (useCountriesStore as any).mockReturnValue({
+    mockUseCountriesStore.mockReturnValue({
       countries: mockCountries,
     });
     render(<Flyout />);
@@ -116,11 +119,11 @@ describe('Flyout', () => {
 
     const anchorClickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click');
 
-    (useSelectionStore as any).mockReturnValue({
+    mockUseSelectionStore.mockReturnValue({
       selectedIds: new Set(['DEU', 'FRA']),
       clearSelections: mockClearSelections,
     });
-    (useCountriesStore as any).mockReturnValue({
+    mockUseCountriesStore.mockReturnValue({
       countries: mockCountries,
     });
 
@@ -161,11 +164,11 @@ describe('Flyout', () => {
       name: { common: 'Berlin, Germany', official: 'Berlin, Germany' },
       capital: ['Berlin, capital'],
     };
-    (useSelectionStore as any).mockReturnValue({
+    mockUseSelectionStore.mockReturnValue({
       selectedIds: new Set(['DEU']),
       clearSelections: mockClearSelections,
     });
-    (useCountriesStore as any).mockReturnValue({
+    mockUseCountriesStore.mockReturnValue({
       countries: [countryWithComma],
     });
 

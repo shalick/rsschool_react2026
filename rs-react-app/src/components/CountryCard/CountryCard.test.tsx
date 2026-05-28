@@ -44,10 +44,12 @@ describe('CountryCard', () => {
   const mockToggleSelection = vi.fn();
   const mockSelectedIds = new Set<string>();
 
+  const mockUseSelectionStore = vi.mocked(useSelectionStore);
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockSelectedIds.clear();
-    (useSelectionStore as any).mockReturnValue({
+    mockUseSelectionStore.mockReturnValue({
       selectedIds: mockSelectedIds,
       toggleSelection: mockToggleSelection,
     });
@@ -59,22 +61,17 @@ describe('CountryCard', () => {
 
   it('renders country name, flag, population, region, and capital', () => {
     renderWithRouter(<CountryCard {...mockCountry} />);
-
     expect(screen.getByText('Germany')).toBeInTheDocument();
-
     const flagImg = screen.getByAltText('Flag of Germany');
     expect(flagImg).toHaveAttribute('src', mockCountry.flags.svg);
-
     expect(screen.getByText(/Population:/)).toBeInTheDocument();
     expect(
       screen.getByText((content) =>
         content.replace(/\D/g, '').includes('83200000')
       )
     ).toBeInTheDocument();
-
     expect(screen.getByText(/Region:/)).toBeInTheDocument();
     expect(screen.getByText('Europe')).toBeInTheDocument();
-
     expect(screen.getByText(/Capital:/)).toBeInTheDocument();
     expect(screen.getByText('Berlin')).toBeInTheDocument();
   });
@@ -113,11 +110,10 @@ describe('CountryCard', () => {
 
   it('displays checkbox and shows selected state when country is selected', () => {
     mockSelectedIds.add('DEU');
-    (useSelectionStore as any).mockReturnValue({
+    mockUseSelectionStore.mockReturnValue({
       selectedIds: mockSelectedIds,
       toggleSelection: mockToggleSelection,
     });
-
     renderWithRouter(<CountryCard {...mockCountry} />);
     const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
     expect(checkbox.checked).toBe(true);

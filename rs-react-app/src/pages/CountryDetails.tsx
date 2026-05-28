@@ -17,6 +17,7 @@ export function CountryDetails() {
 
   useEffect(() => {
     if (!countryCode) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
 
     fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`)

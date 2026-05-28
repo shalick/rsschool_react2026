@@ -23,5 +23,13 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+    },
+  },
+  {
+    ignores: ['coverage/**', 'dist/**', 'node_modules/**'],
   },
 ]);

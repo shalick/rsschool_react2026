@@ -15,13 +15,14 @@ vi.mock('../../context/ThemeContext', () => ({
 
 describe('ThemeToggle', () => {
   const mockToggleTheme = vi.fn();
+  const mockUseTheme = vi.mocked(useTheme);
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('renders "🌙 Dark" when theme is light', () => {
-    (useTheme as any).mockReturnValue({
+    mockUseTheme.mockReturnValue({
       theme: 'light',
       toggleTheme: mockToggleTheme,
     });
@@ -33,7 +34,7 @@ describe('ThemeToggle', () => {
   });
 
   it('renders "☀️ Light" when theme is dark', () => {
-    (useTheme as any).mockReturnValue({
+    mockUseTheme.mockReturnValue({
       theme: 'dark',
       toggleTheme: mockToggleTheme,
     });
@@ -45,7 +46,7 @@ describe('ThemeToggle', () => {
   });
 
   it('calls toggleTheme when button is clicked', () => {
-    (useTheme as any).mockReturnValue({
+    mockUseTheme.mockReturnValue({
       theme: 'light',
       toggleTheme: mockToggleTheme,
     });

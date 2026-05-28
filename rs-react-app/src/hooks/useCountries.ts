@@ -28,6 +28,7 @@ export function useCountries() {
 
   useEffect(() => {
     if (searchStr === '') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchResults(null);
       setError(null);
       return;

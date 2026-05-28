@@ -1,37 +1,38 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
+const mockRender = vi.fn();
+const mockCreateRoot = vi.fn(() => ({ render: mockRender }));
+
+vi.mock('react-dom/client', () => ({
+  default: {
+    createRoot: mockCreateRoot,
+  },
+  createRoot: mockCreateRoot,
+  __esModule: true,
+}));
+
 describe('main entry point', () => {
   let rootElement: HTMLElement;
-  let mockRender: any;
-  let createRootMock: any;
 
   beforeEach(async () => {
+    mockRender.mockClear();
+    mockCreateRoot.mockClear();
+
     rootElement = document.createElement('div');
     rootElement.id = 'root';
     document.body.appendChild(rootElement);
 
     vi.resetModules();
-
-    mockRender = vi.fn();
-    createRootMock = vi.fn().mockReturnValue({ render: mockRender });
-
-    vi.doMock('react-dom/client', () => ({
-      createRoot: createRootMock,
-      default: {
-        createRoot: createRootMock,
-      },
-    }));
-
     await import('./main');
   });
 
   afterEach(() => {
     document.body.innerHTML = '';
-    vi.clearAllMocks();
   });
 
   it('should call createRoot with the element having id "root"', () => {
-    expect(createRootMock).toHaveBeenCalledWith(rootElement);
+    expect(mockCreateRoot).toHaveBeenCalledTimes(1);
+    expect(mockCreateRoot).toHaveBeenCalledWith(rootElement);
   });
 
   it('should call render method on the root', () => {
