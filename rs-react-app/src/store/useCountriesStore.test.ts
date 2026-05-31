@@ -1,10 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useCountriesStore } from './useCountriesStore';
-import { fetchAllCountries } from '../api/countriesApi';
+import { fetchAllCountries, fetchCountriesByName } from '../api/countriesApi';
+import { queryClient } from '../query/queryClient';
 import type { ICountry } from '../components/CountriesCardsList/CountriesCardsList';
 
 vi.mock('../api/countriesApi', () => ({
   fetchAllCountries: vi.fn(),
+  fetchCountriesByName: vi.fn(),
 }));
 
 describe('useCountriesStore', () => {
@@ -29,6 +31,7 @@ describe('useCountriesStore', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    queryClient.removeQueries({ queryKey: ['countries'], exact: false });
     // Reset store to initial state using Zustand's setState
     useCountriesStore.setState({
       countries: [],
@@ -80,6 +83,22 @@ describe('useCountriesStore', () => {
     await store.fetchCountries();
 
     expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('should search countries using TanStack Query search endpoint', async () => {
+    const mockSearch = fetchCountriesByName as unknown as ReturnType<
+      typeof vi.fn
+    >;
+    mockSearch.mockResolvedValue(mockCountries);
+
+    const store = useCountriesStore.getState();
+    await store.searchCountries('Germany');
+
+    const updatedState = useCountriesStore.getState();
+    expect(updatedState.countries).toEqual(mockCountries);
+    expect(updatedState.isLoading).toBe(false);
+    expect(updatedState.error).toBeNull();
+    expect(mockSearch).toHaveBeenCalledWith('Germany');
   });
 
   it('should handle fetch error', async () => {

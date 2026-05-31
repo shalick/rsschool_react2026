@@ -163,6 +163,8 @@ describe('HomePage', () => {
       countries: mockCountries,
       isLoading: false,
       error: null,
+      fetchCountries: vi.fn(),
+      searchCountries: vi.fn(),
     });
     mockNavigate.mockClear();
   });
@@ -195,6 +197,8 @@ describe('HomePage', () => {
       countries: [],
       isLoading: true,
       error: null,
+      fetchCountries: vi.fn(),
+      searchCountries: vi.fn(),
     });
     renderHomePage();
     expect(screen.getByText('Loading...')).toBeInTheDocument();
@@ -205,6 +209,8 @@ describe('HomePage', () => {
       countries: [],
       isLoading: false,
       error: 'Failed to fetch countries',
+      fetchCountries: vi.fn(),
+      searchCountries: vi.fn(),
     });
     renderHomePage();
     expect(
@@ -257,6 +263,8 @@ describe('HomePage', () => {
       countries: manyCountries,
       isLoading: false,
       error: null,
+      fetchCountries: vi.fn(),
+      searchCountries: vi.fn(),
     });
 
     renderHomePage();

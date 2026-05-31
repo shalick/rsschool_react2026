@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Loader } from '../components/Loader/Loader';
+import { fetchCountryByCode } from '../api/countriesApi';
 
 interface ICountryDetail {
   name: { common: string; official: string };
@@ -12,41 +14,28 @@ interface ICountryDetail {
 export function CountryDetails() {
   const { countryCode } = useParams<{ countryCode: string }>();
   const navigate = useNavigate();
-  const [country, setCountry] = useState<ICountryDetail | null>(null);
-  const [loading, setLoading] = useState(false);
+
+  const queryResult = useQuery<ICountryDetail, Error>({
+    queryKey: ['country', countryCode],
+    queryFn: () => fetchCountryByCode(countryCode ?? ''),
+    enabled: Boolean(countryCode),
+    retry: false,
+  });
+
+  const country = queryResult.data as ICountryDetail | undefined;
+  const { isLoading, isError } = queryResult;
 
   useEffect(() => {
-    if (!countryCode) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-
-    fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error('Country not found in API');
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data && data.length > 0) {
-          setCountry(data[0]);
-        } else {
-          throw new Error('Empty data array');
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Fetch error details:', err);
-        setLoading(false);
-        navigate('/page-not-found', { replace: true });
-      });
-  }, [countryCode, navigate]);
+    if (isError) {
+      navigate('/page-not-found', { replace: true });
+    }
+  }, [isError, navigate]);
 
   const handleClose = () => {
     navigate({ pathname: '/', search: window.location.search });
   };
 
-  if (loading)
+  if (isLoading)
     return (
       <div style={{ padding: '2rem' }}>
         <Loader />

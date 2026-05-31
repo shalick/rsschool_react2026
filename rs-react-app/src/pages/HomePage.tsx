@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useCountriesStore } from '../store/useCountriesStore';
 import { CardsList } from '../components/CountriesCardsList/CountriesCardsList';
@@ -9,27 +9,31 @@ import { ErrorSimulator } from '../components/ErrorSimulator/ErrorSimulator';
 import classes from './HomePage.module.css';
 
 export function HomePage() {
-  const { countries, isLoading, error } = useCountriesStore();
+  const { countries, isLoading, error, fetchCountries, searchCountries } =
+    useCountriesStore();
 
   const [searchStr, setSearchStr] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  const filteredCountries = !searchStr.trim()
-    ? countries
-    : countries.filter((c) =>
-        c.name.common.toLowerCase().includes(searchStr.toLowerCase())
-      );
+  useEffect(() => {
+    if (searchStr.trim()) {
+      searchCountries(searchStr);
+    } else {
+      fetchCountries();
+    }
+  }, [fetchCountries, searchCountries, searchStr]);
 
-  const totalPages = Math.ceil(filteredCountries.length / itemsPerPage);
+  const totalPages = Math.ceil(countries.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedCountries = filteredCountries.slice(
+  const paginatedCountries = countries.slice(
     startIndex,
     startIndex + itemsPerPage
   );
 
   const changeSearch = (value: string) => {
     setSearchStr(value);
+    setCurrentPage(1);
   };
 
   const setPage = (page: number) => {
