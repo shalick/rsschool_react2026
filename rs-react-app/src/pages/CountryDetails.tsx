@@ -1,6 +1,10 @@
-import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { queryClient } from '../query/queryClient';
 import { Loader } from '../components/Loader/Loader';
+import { fetchCountryByCode } from '../api/countriesApi';
+import styles from './CountryDetails.module.css';
+import { Button } from '../components/Button/Button';
 
 interface ICountryDetail {
   name: { common: string; official: string };
@@ -12,74 +16,72 @@ interface ICountryDetail {
 export function CountryDetails() {
   const { countryCode } = useParams<{ countryCode: string }>();
   const navigate = useNavigate();
-  const [country, setCountry] = useState<ICountryDetail | null>(null);
-  const [loading, setLoading] = useState(false);
+  const normalizedCountryCode = countryCode?.toLowerCase();
 
-  useEffect(() => {
-    if (!countryCode) return;
-    setLoading(true);
+  const queryResult = useQuery<ICountryDetail, Error>({
+    queryKey: ['country', normalizedCountryCode],
+    queryFn: () => fetchCountryByCode(normalizedCountryCode ?? ''),
+    enabled: Boolean(normalizedCountryCode),
+    refetchOnMount: 'always',
+  });
 
-    fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error('Country not found in API');
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data && data.length > 0) {
-          setCountry(data[0]);
-        } else {
-          throw new Error('Empty data array');
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Fetch error details:', err);
-        setLoading(false);
-        navigate('/page-not-found', { replace: true });
-      });
-  }, [countryCode, navigate]);
+  const country = queryResult.data as ICountryDetail | undefined;
+  const { isLoading, isError, isFetching } = queryResult;
+  const error = queryResult.error;
 
   const handleClose = () => {
     navigate({ pathname: '/', search: window.location.search });
   };
 
-  if (loading)
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: ['country', normalizedCountryCode],
+    });
+    await queryResult.refetch();
+  };
+
+  if (isLoading)
     return (
       <div style={{ padding: '2rem' }}>
         <Loader />
       </div>
     );
+
+  if (isError && !isFetching)
+    return (
+      <div className={styles.errorContainer}>
+        <h2>Country details could not be loaded</h2>
+        <p>{error?.message ?? 'Please try again later.'}</p>
+        <Button
+          variant="primary"
+          onClick={handleClose}
+          className={styles.errorButton}
+        >
+          Return to country list
+        </Button>
+      </div>
+    );
+
   if (!country) return null;
 
   return (
-    <div style={{ padding: '1.5rem', position: 'relative' }}>
-      <button
-        onClick={handleClose}
-        style={{
-          position: 'absolute',
-          top: '1rem',
-          right: '1rem',
-          cursor: 'pointer',
-          background: 'none',
-          border: 'none',
-          fontSize: '1.2rem',
-        }}
+    <div className={styles.container}>
+      <Button
+        variant="secondary"
+        className={styles.refresh}
+        onClick={handleRefresh}
       >
+        {isFetching ? '🔄 Refreshing...' : '🔄 Refresh'}
+      </Button>
+      <Button variant="ghost" className={styles.close} onClick={handleClose}>
         ✕ Close
-      </button>
+      </Button>
 
       <h2>{country.name.official}</h2>
       <img
         src={country.flags.svg}
         alt={country.flags.alt || `Flag of ${country.name.common}`}
-        style={{
-          width: '100%',
-          maxWidth: '250px',
-          margin: '1rem 0',
-          borderRadius: '4px',
-        }}
+        className={styles.flag}
       />
       <p>
         <strong>Subregion:</strong> {country.subregion || 'N/A'}

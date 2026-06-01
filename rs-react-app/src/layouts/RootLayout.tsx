@@ -16,22 +16,20 @@ export function RootLayout() {
     <div className={classes.layout}>
       <header className={classes.header}>
         <nav className={classes.nav}>
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              isActive ? classes.activeLink : classes.link
-            }
-          >
-            Home
-          </NavLink>
-          <NavLink
-            to="/about"
-            className={({ isActive }) =>
-              isActive ? classes.activeLink : classes.link
-            }
-          >
-            About
-          </NavLink>
+          {[
+            { to: '/', label: 'Home' },
+            { to: '/about', label: 'About' },
+          ].map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={({ isActive }) =>
+                isActive ? classes.activeLink : classes.link
+              }
+            >
+              {link.label}
+            </NavLink>
+          ))}
         </nav>
         <div className={classes.actions}>
           <ThemeToggle />

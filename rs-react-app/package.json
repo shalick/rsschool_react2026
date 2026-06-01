@@ -7,13 +7,16 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "lint:fix": "npm run lint -- --fix",
     "preview": "vite preview",
     "format": "prettier --write .",
-    "prepare": "husky && chmod ug+x .husky/*",
+    "prepare": "husky || true",
     "test": "vitest",
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-query-devtools": "^5.100.14",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.15.1",

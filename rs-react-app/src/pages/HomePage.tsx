@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useCountriesStore } from '../store/useCountriesStore';
 import { CardsList } from '../components/CountriesCardsList/CountriesCardsList';
@@ -7,37 +7,45 @@ import { Pagination } from '../components/Pagination/Pagination';
 import { ErrorBoundary } from '../components/ErrorBoundary/ErrorBoundary';
 import { ErrorSimulator } from '../components/ErrorSimulator/ErrorSimulator';
 import classes from './HomePage.module.css';
-import type { ICountry } from '../components/CountriesCardsList/CountriesCardsList';
+import { Button } from '../components/Button/Button';
 
 export function HomePage() {
-  const { countries, isLoading, error } = useCountriesStore();
+  const {
+    countries,
+    isLoading,
+    error,
+    fetchCountries,
+    searchCountries,
+    refreshCountries,
+  } = useCountriesStore();
 
   const [searchStr, setSearchStr] = useState('');
-  const [filteredCountries, setFilteredCountries] = useState<ICountry[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
   useEffect(() => {
-    if (!searchStr.trim()) {
-      setFilteredCountries(countries);
+    if (searchStr.trim()) {
+      searchCountries(searchStr);
     } else {
-      const filtered = countries.filter((c) =>
-        c.name.common.toLowerCase().includes(searchStr.toLowerCase())
-      );
-      setFilteredCountries(filtered);
+      fetchCountries();
     }
-    setCurrentPage(1);
-  }, [searchStr, countries]);
+  }, [fetchCountries, searchCountries, searchStr]);
 
-  const totalPages = Math.ceil(filteredCountries.length / itemsPerPage);
+  const totalPages = Math.ceil(countries.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedCountries = filteredCountries.slice(
+  const paginatedCountries = countries.slice(
     startIndex,
     startIndex + itemsPerPage
   );
 
   const changeSearch = (value: string) => {
     setSearchStr(value);
+    setCurrentPage(1);
+  };
+
+  const handleRefresh = () => {
+    setCurrentPage(1);
+    refreshCountries();
   };
 
   const setPage = (page: number) => {
@@ -77,6 +85,22 @@ export function HomePage() {
                   onSearchChange={changeSearch}
                   onSearch={(val) => changeSearch(val)}
                 />
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  <Button
+                    variant="secondary"
+                    onClick={handleRefresh}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? '🔄 Refreshing...' : '🔄 Refresh'}
+                  </Button>
+                </div>
                 <CardsList
                   countries={paginatedCountries}
                   isLoading={isLoading}
@@ -99,6 +123,22 @@ export function HomePage() {
           )}
         </div>
       </ErrorBoundary>
+
+      <Button
+        variant={simulateError ? 'secondary' : 'primary'}
+        onClick={() => setSimulateError((prev) => !prev)}
+        style={{
+          position: 'fixed',
+          bottom: '2rem',
+          left: '2rem',
+          zIndex: 2000,
+          transition: 'background-color 0.2s ease, transform 0.1s ease',
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.03)')}
+        onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+      >
+        {simulateError ? '🔄 Reset Error Simulation' : '⚠️ Test Error Boundary'}
+      </Button>
     </>
   );
 }

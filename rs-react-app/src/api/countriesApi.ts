@@ -1,4 +1,4 @@
-import type { ICountry } from '../components/CountriesCardsList/CountriesCardsList';
+import type { Country } from '../shared/types';
 
 const getErrorMessage = (status: number): string => {
   switch (true) {
@@ -15,11 +15,11 @@ const getErrorMessage = (status: number): string => {
   }
 };
 
-export async function fetchAllCountries(): Promise<ICountry[]> {
-  const url = '/api/v3.1/all?fields=name,flags,capital,region,population,cca3';
+export async function fetchAllCountries(): Promise<Country[]> {
+  const url =
+    'https://restcountries.com/v3.1/all?fields=name,flags,capital,region,population,cca3';
 
   let response: Response;
-
   try {
     response = await fetch(url);
   } catch {
@@ -36,8 +36,8 @@ export async function fetchAllCountries(): Promise<ICountry[]> {
   return response.json();
 }
 
-export async function fetchCountriesByName(name: string): Promise<ICountry[]> {
-  const url = `/api/v3.1/name/${encodeURIComponent(name)}?fields=name,flags,capital,region,population,cca3`;
+export async function fetchCountriesByName(name: string): Promise<Country[]> {
+  const url = `https://restcountries.com/v3.1/name/${encodeURIComponent(name)}?fields=name,flags,capital,region,population,cca3`;
 
   let response: Response;
   try {
@@ -57,4 +57,46 @@ export async function fetchCountriesByName(name: string): Promise<ICountry[]> {
   }
 
   return response.json();
+}
+
+export interface ICountryDetail {
+  name: { common: string; official: string };
+  flags: { svg: string; alt?: string };
+  subregion?: string;
+  languages?: Record<string, string>;
+}
+
+export async function fetchCountryByCode(
+  code: string
+): Promise<ICountryDetail> {
+  const url = `https://restcountries.com/v3.1/alpha/${encodeURIComponent(code)}?fields=name,flags,subregion,languages,cca3`; // keep necessary fields for details
+
+  let response: Response;
+  try {
+    response = await fetch(url);
+  } catch {
+    throw new Error(
+      'Unable to connect to the server. Please check your internet connection and try again.'
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error('Country not found in API');
+  }
+
+  const data = await response.json();
+
+  if (Array.isArray(data)) {
+    if (data.length === 0) {
+      throw new Error('Country not found in API');
+    }
+
+    return data[0];
+  }
+
+  if (!data || typeof data !== 'object') {
+    throw new Error('Country not found in API');
+  }
+
+  return data;
 }

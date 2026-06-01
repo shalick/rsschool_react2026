@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { fetchAllCountries, fetchCountriesByName } from '../api/countriesApi';
-import type { ICountry } from '../components/CountriesCardsList/CountriesCardsList';
+import type { Country } from '../shared/types';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -9,43 +9,66 @@ export function useCountries() {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = Number(searchParams.get('page')) || 1;
   const searchStr = searchParams.get('search') || '';
-  const [allCountries, setAllCountries] = useState<ICountry[]>([]);
-  const [searchResults, setSearchResults] = useState<ICountry[] | null>(null);
+  const [allCountries, setAllCountries] = useState<Country[]>([]);
+  const [searchResults, setSearchResults] = useState<Country[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchAllCountries()
-      .then((data) => {
+    let mounted = true;
+
+    const load = async () => {
+      try {
+        setIsLoading(true);
+        const data = await fetchAllCountries();
+        if (!mounted) return;
         setAllCountries(data);
-        setIsLoading(false);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-        setIsLoading(false);
-      });
+      } catch (err) {
+        if (!mounted) return;
+        setError((err as Error).message);
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
     if (searchStr === '') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchResults(null);
       setError(null);
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
+    let mounted = true;
 
-    fetchCountriesByName(searchStr)
-      .then((data) => {
+    const load = async () => {
+      setError(null);
+      try {
+        setIsLoading(true);
+        const data = await fetchCountriesByName(searchStr);
+        if (!mounted) return;
         setSearchResults(data);
-        setIsLoading(false);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
+      } catch (err) {
+        if (!mounted) return;
+        setError((err as Error).message);
         setSearchResults([]);
-        setIsLoading(false);
-      });
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      mounted = false;
+    };
   }, [searchStr]);
 
   const changeSearch = useCallback(
