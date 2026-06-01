@@ -185,4 +185,126 @@ describe('Flyout', () => {
     mockCreateObjectURL.mockRestore();
     mockRevokeObjectURL.mockRestore();
   });
+
+  it('generates unquoted CSV rows when no escaping is needed', async () => {
+    const mockCreateObjectURL = vi.spyOn(URL, 'createObjectURL');
+    const mockRevokeObjectURL = vi.spyOn(URL, 'revokeObjectURL');
+    mockCreateObjectURL.mockReturnValue('blob:mock-url');
+    const anchorClickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click');
+
+    mockUseSelectionStore.mockReturnValue({
+      selectedIds: new Set(['DEU']),
+      clearSelections: mockClearSelections,
+    });
+    mockUseCountriesStore.mockReturnValue({
+      countries: [mockCountries[0]],
+    });
+
+    render(<Flyout />);
+    fireEvent.click(screen.getByRole('button', { name: /Download/i }));
+
+    const blob = mockCreateObjectURL.mock.calls[0][0] as Blob;
+    const csvText = await blob.text();
+    const csvRow = csvText.split('\n')[1];
+    expect(csvRow).toBe(
+      'Germany,Federal Republic of Germany,Europe,Western Europe,Berlin,83200000,de.svg,Flag of Germany,/deu'
+    );
+    expect(anchorClickSpy).toHaveBeenCalled();
+
+    anchorClickSpy.mockRestore();
+    mockCreateObjectURL.mockRestore();
+    mockRevokeObjectURL.mockRestore();
+  });
+
+  it('escapes newline characters in CSV fields correctly', async () => {
+    const mockCreateObjectURL = vi.spyOn(URL, 'createObjectURL');
+    const mockRevokeObjectURL = vi.spyOn(URL, 'revokeObjectURL');
+    mockCreateObjectURL.mockReturnValue('blob:mock-url');
+    const anchorClickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click');
+
+    const countryWithNewline = {
+      ...mockCountries[0],
+      capital: ['Line1\nLine2'],
+    };
+    mockUseSelectionStore.mockReturnValue({
+      selectedIds: new Set(['DEU']),
+      clearSelections: mockClearSelections,
+    });
+    mockUseCountriesStore.mockReturnValue({
+      countries: [countryWithNewline],
+    });
+
+    render(<Flyout />);
+    fireEvent.click(screen.getByRole('button', { name: /Download/i }));
+
+    const blob = mockCreateObjectURL.mock.calls[0][0] as Blob;
+    const csvText = await blob.text();
+    expect(csvText).toContain('"Line1\nLine2"');
+    expect(anchorClickSpy).toHaveBeenCalled();
+
+    anchorClickSpy.mockRestore();
+    mockCreateObjectURL.mockRestore();
+    mockRevokeObjectURL.mockRestore();
+  });
+
+  it('filters out unselected countries when downloading CSV', async () => {
+    const mockCreateObjectURL = vi.spyOn(URL, 'createObjectURL');
+    const mockRevokeObjectURL = vi.spyOn(URL, 'revokeObjectURL');
+    mockCreateObjectURL.mockReturnValue('blob:mock-url');
+    const anchorClickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click');
+
+    mockUseSelectionStore.mockReturnValue({
+      selectedIds: new Set(['DEU']),
+      clearSelections: mockClearSelections,
+    });
+    mockUseCountriesStore.mockReturnValue({
+      countries: mockCountries,
+    });
+
+    render(<Flyout />);
+    fireEvent.click(screen.getByRole('button', { name: /Download/i }));
+
+    const blob = mockCreateObjectURL.mock.calls[0][0] as Blob;
+    const csvText = await blob.text();
+    expect(csvText).toContain('/deu');
+    expect(csvText).not.toContain('/fra');
+    expect(anchorClickSpy).toHaveBeenCalled();
+
+    anchorClickSpy.mockRestore();
+    mockCreateObjectURL.mockRestore();
+    mockRevokeObjectURL.mockRestore();
+  });
+
+  it('falls back to alt text and N/A for missing fields in CSV output', async () => {
+    const mockCreateObjectURL = vi.spyOn(URL, 'createObjectURL');
+    const mockRevokeObjectURL = vi.spyOn(URL, 'revokeObjectURL');
+    mockCreateObjectURL.mockReturnValue('blob:mock-url');
+    const anchorClickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click');
+
+    const countryWithoutAltOrCapital = {
+      ...mockCountries[0],
+      flags: { svg: 'de.svg', alt: undefined },
+      capital: undefined,
+    };
+    mockUseSelectionStore.mockReturnValue({
+      selectedIds: new Set(['DEU']),
+      clearSelections: mockClearSelections,
+    });
+    mockUseCountriesStore.mockReturnValue({
+      countries: [countryWithoutAltOrCapital],
+    });
+
+    render(<Flyout />);
+    fireEvent.click(screen.getByRole('button', { name: /Download/i }));
+
+    const blob = mockCreateObjectURL.mock.calls[0][0] as Blob;
+    const csvText = await blob.text();
+    expect(csvText).toContain('Flag of Germany');
+    expect(csvText).toContain(',N/A,');
+    expect(anchorClickSpy).toHaveBeenCalled();
+
+    anchorClickSpy.mockRestore();
+    mockCreateObjectURL.mockRestore();
+    mockRevokeObjectURL.mockRestore();
+  });
 });

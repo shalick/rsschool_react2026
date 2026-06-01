@@ -84,7 +84,6 @@ export function CountryDetails() {
           padding: '0.5rem 1rem',
           borderRadius: '4px',
           backgroundColor: '#f5f5f5',
-          border: '1px solid #ccc',
         }}
       >
         {isFetching ? '🔄 Refreshing...' : '🔄 Refresh'}
