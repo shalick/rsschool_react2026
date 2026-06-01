@@ -165,6 +165,7 @@ describe('HomePage', () => {
       error: null,
       fetchCountries: vi.fn(),
       searchCountries: vi.fn(),
+      refreshCountries: vi.fn(),
     });
     mockNavigate.mockClear();
   });
@@ -199,6 +200,7 @@ describe('HomePage', () => {
       error: null,
       fetchCountries: vi.fn(),
       searchCountries: vi.fn(),
+      refreshCountries: vi.fn(),
     });
     renderHomePage();
     expect(screen.getByText('Loading...')).toBeInTheDocument();
@@ -211,11 +213,45 @@ describe('HomePage', () => {
       error: 'Failed to fetch countries',
       fetchCountries: vi.fn(),
       searchCountries: vi.fn(),
+      refreshCountries: vi.fn(),
     });
     renderHomePage();
     expect(
       screen.getByText('Error: Failed to fetch countries')
     ).toBeInTheDocument();
+  });
+
+  it('calls refreshCountries when refresh button is clicked', () => {
+    const mockRefresh = vi.fn();
+    mockUseCountriesStore.mockReturnValue({
+      countries: mockCountries,
+      isLoading: false,
+      error: null,
+      fetchCountries: vi.fn(),
+      searchCountries: vi.fn(),
+      refreshCountries: mockRefresh,
+    });
+
+    renderHomePage();
+    const refreshButton = screen.getByRole('button', { name: /Refresh/i });
+    fireEvent.click(refreshButton);
+    expect(mockRefresh).toHaveBeenCalled();
+  });
+
+  it('shows loading state on refresh button when isLoading is true', () => {
+    mockUseCountriesStore.mockReturnValue({
+      countries: mockCountries,
+      isLoading: true,
+      error: null,
+      fetchCountries: vi.fn(),
+      searchCountries: vi.fn(),
+      refreshCountries: vi.fn(),
+    });
+
+    renderHomePage();
+    const refreshButton = screen.getByRole('button', { name: /Refreshing/i });
+    expect(refreshButton).toBeInTheDocument();
+    expect(refreshButton.textContent).toContain('Refreshing...');
   });
 
   it('renders filtered countries when search param is in the URL', () => {
@@ -265,6 +301,7 @@ describe('HomePage', () => {
       error: null,
       fetchCountries: vi.fn(),
       searchCountries: vi.fn(),
+      refreshCountries: vi.fn(),
     });
 
     renderHomePage();

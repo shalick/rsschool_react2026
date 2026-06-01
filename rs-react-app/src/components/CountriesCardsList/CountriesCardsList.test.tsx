@@ -2,7 +2,10 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { CardsList } from './CountriesCardsList';
-import { describe, expect, it, vi } from 'vitest';
+import { useCountriesStore } from '../../store/useCountriesStore';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
+
+vi.mock('../../store/useCountriesStore');
 
 const mockCountries = [
   {
@@ -20,7 +23,27 @@ const renderWithRouter = (ui: React.ReactElement) => {
 };
 
 describe('CardsList', () => {
+  beforeEach(() => {
+    vi.mocked(useCountriesStore).mockReturnValue({
+      countries: mockCountries,
+      isLoading: false,
+      error: null,
+      fetchCountries: vi.fn(),
+      searchCountries: vi.fn(),
+      refreshCountries: vi.fn(),
+    });
+  });
+
   it('renders Loader when isLoading is true', () => {
+    vi.mocked(useCountriesStore).mockReturnValue({
+      countries: [],
+      isLoading: true,
+      error: null,
+      fetchCountries: vi.fn(),
+      searchCountries: vi.fn(),
+      refreshCountries: vi.fn(),
+    });
+
     renderWithRouter(
       <CardsList countries={[]} isLoading={true} error={null} />
     );
@@ -29,6 +52,15 @@ describe('CardsList', () => {
   });
 
   it('renders error message and retry button when error is provided', () => {
+    vi.mocked(useCountriesStore).mockReturnValue({
+      countries: [],
+      isLoading: false,
+      error: null,
+      fetchCountries: vi.fn(),
+      searchCountries: vi.fn(),
+      refreshCountries: vi.fn(),
+    });
+
     renderWithRouter(
       <CardsList countries={[]} isLoading={false} error="Failed to fetch" />
     );
@@ -59,11 +91,15 @@ describe('CardsList', () => {
     expect(screen.getByText('Mexico')).toBeInTheDocument();
   });
 
-  it('calls window.location.reload when retry button is clicked', () => {
-    const reloadMock = vi.fn();
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: { reload: reloadMock },
+  it('calls refreshCountries when retry button is clicked', () => {
+    const mockRefresh = vi.fn();
+    vi.mocked(useCountriesStore).mockReturnValue({
+      countries: [],
+      isLoading: false,
+      error: null,
+      fetchCountries: vi.fn(),
+      searchCountries: vi.fn(),
+      refreshCountries: mockRefresh,
     });
 
     renderWithRouter(
@@ -71,6 +107,6 @@ describe('CardsList', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: /retry/i }));
-    expect(reloadMock).toHaveBeenCalledTimes(1);
+    expect(mockRefresh).toHaveBeenCalled();
   });
 });

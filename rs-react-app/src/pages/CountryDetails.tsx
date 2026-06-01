@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { queryClient } from '../query/queryClient';
 import { Loader } from '../components/Loader/Loader';
 import { fetchCountryByCode } from '../api/countriesApi';
 
@@ -28,6 +29,13 @@ export function CountryDetails() {
 
   const handleClose = () => {
     navigate({ pathname: '/', search: window.location.search });
+  };
+
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: ['country', normalizedCountryCode],
+    });
+    await queryResult.refetch();
   };
 
   if (isLoading)
@@ -63,6 +71,24 @@ export function CountryDetails() {
 
   return (
     <div style={{ padding: '1.5rem', position: 'relative' }}>
+      <button
+        onClick={handleRefresh}
+        style={{
+          position: 'absolute',
+          top: '1rem',
+          right: '4rem',
+          cursor: 'pointer',
+          background: 'none',
+          border: 'none',
+          fontSize: '0.9rem',
+          padding: '0.5rem 1rem',
+          borderRadius: '4px',
+          backgroundColor: '#f5f5f5',
+          border: '1px solid #ccc',
+        }}
+      >
+        {isFetching ? '🔄 Refreshing...' : '🔄 Refresh'}
+      </button>
       <button
         onClick={handleClose}
         style={{

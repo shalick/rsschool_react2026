@@ -9,8 +9,14 @@ import { ErrorSimulator } from '../components/ErrorSimulator/ErrorSimulator';
 import classes from './HomePage.module.css';
 
 export function HomePage() {
-  const { countries, isLoading, error, fetchCountries, searchCountries } =
-    useCountriesStore();
+  const {
+    countries,
+    isLoading,
+    error,
+    fetchCountries,
+    searchCountries,
+    refreshCountries,
+  } = useCountriesStore();
 
   const [searchStr, setSearchStr] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,6 +40,11 @@ export function HomePage() {
   const changeSearch = (value: string) => {
     setSearchStr(value);
     setCurrentPage(1);
+  };
+
+  const handleRefresh = () => {
+    setCurrentPage(1);
+    refreshCountries();
   };
 
   const setPage = (page: number) => {
@@ -73,6 +84,31 @@ export function HomePage() {
                   onSearchChange={changeSearch}
                   onSearch={(val) => changeSearch(val)}
                 />
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  <button
+                    onClick={handleRefresh}
+                    disabled={isLoading}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      borderRadius: '4px',
+                      border: '1px solid #ccc',
+                      background: '#f5f5f5',
+                      cursor: isLoading ? 'not-allowed' : 'pointer',
+                      opacity: isLoading ? 0.6 : 1,
+                      fontSize: '0.9rem',
+                      fontWeight: '500',
+                    }}
+                  >
+                    {isLoading ? '🔄 Refreshing...' : '🔄 Refresh'}
+                  </button>
+                </div>
                 <CardsList
                   countries={paginatedCountries}
                   isLoading={isLoading}

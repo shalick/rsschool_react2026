@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import { CountryCard } from '../CountryCard/CountryCard';
+import { useCountriesStore } from '../../store/useCountriesStore';
 import classes from './CountriesCardsList.module.css';
 import { Loader } from '../Loader/Loader';
 
@@ -21,13 +22,14 @@ interface IProps {
 
 export function CardsList({ countries, isLoading, error }: IProps) {
   const location = useLocation();
+  const { refreshCountries } = useCountriesStore();
 
   if (isLoading) return <Loader />;
   if (error) {
     return (
       <div className={classes.error}>
         <p>⚠️ {error}</p>
-        <button onClick={() => window.location.reload()}>Retry</button>
+        <button onClick={() => refreshCountries()}>Retry</button>
       </div>
     );
   }
