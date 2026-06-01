@@ -1,10 +1,10 @@
 import { create } from 'zustand';
-import type { ICountry } from '../components/CountriesCardsList/CountriesCardsList';
+import type { Country } from '../shared/types';
 import { fetchAllCountries, fetchCountriesByName } from '../api/countriesApi';
 import { queryClient } from '../query/queryClient';
 
 interface CountriesState {
-  countries: ICountry[];
+  countries: Country[];
   isLoading: boolean;
   error: string | null;
   fetchCountries: () => Promise<void>;
@@ -46,7 +46,7 @@ export const useCountriesStore = create<CountriesState>((set, get) => ({
 
     if (!trimmedSearch) {
       try {
-        const cachedCountries = queryClient.getQueryData<ICountry[]>([
+        const cachedCountries = queryClient.getQueryData<Country[]>([
           'countries',
           'all',
         ]);

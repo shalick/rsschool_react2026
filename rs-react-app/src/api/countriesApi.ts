@@ -1,4 +1,4 @@
-import type { ICountry } from '../components/CountriesCardsList/CountriesCardsList';
+import type { Country } from '../shared/types';
 
 const getErrorMessage = (status: number): string => {
   switch (true) {
@@ -15,7 +15,7 @@ const getErrorMessage = (status: number): string => {
   }
 };
 
-export async function fetchAllCountries(): Promise<ICountry[]> {
+export async function fetchAllCountries(): Promise<Country[]> {
   const url =
     'https://restcountries.com/v3.1/all?fields=name,flags,capital,region,population,cca3';
 
@@ -36,7 +36,7 @@ export async function fetchAllCountries(): Promise<ICountry[]> {
   return response.json();
 }
 
-export async function fetchCountriesByName(name: string): Promise<ICountry[]> {
+export async function fetchCountriesByName(name: string): Promise<Country[]> {
   const url = `https://restcountries.com/v3.1/name/${encodeURIComponent(name)}?fields=name,flags,capital,region,population,cca3`;
 
   let response: Response;

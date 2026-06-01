@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useCountriesStore } from './useCountriesStore';
 import { fetchAllCountries, fetchCountriesByName } from '../api/countriesApi';
 import { queryClient } from '../query/queryClient';
-import type { ICountry } from '../components/CountriesCardsList/CountriesCardsList';
+import type { Country } from '../shared/types';
 
 vi.mock('../api/countriesApi', () => ({
   fetchAllCountries: vi.fn(),
@@ -10,7 +10,7 @@ vi.mock('../api/countriesApi', () => ({
 }));
 
 describe('useCountriesStore', () => {
-  const mockCountries: ICountry[] = [
+  const mockCountries: Country[] = [
     {
       cca3: 'DEU',
       name: { common: 'Germany', official: 'Federal Republic of Germany' },
@@ -168,13 +168,13 @@ describe('useCountriesStore', () => {
   });
 
   it('should set isLoading while fetchCountries is in progress', async () => {
-    let resolveFetch!: (value: ICountry[]) => void;
-    const pendingFetch = new Promise<ICountry[]>((resolve) => {
+    let resolveFetch!: (value: Country[]) => void;
+    const pendingFetch = new Promise<Country[]>((resolve) => {
       resolveFetch = resolve;
     });
 
     const mockFetch = fetchAllCountries as unknown as ReturnType<typeof vi.fn>;
-    mockFetch.mockReturnValue(pendingFetch as unknown as Promise<ICountry[]>);
+    mockFetch.mockReturnValue(pendingFetch as unknown as Promise<Country[]>);
 
     const store = useCountriesStore.getState();
     const fetchPromise = store.fetchCountries();
@@ -219,7 +219,7 @@ describe('useCountriesStore', () => {
   });
 
   it('should invalidate cached countries and refetch on refreshCountries', async () => {
-    const oldCountries: ICountry[] = [
+    const oldCountries: Country[] = [
       {
         cca3: 'ESP',
         name: { common: 'Spain', official: 'Kingdom of Spain' },
@@ -232,7 +232,7 @@ describe('useCountriesStore', () => {
 
     queryClient.setQueryData(['countries', 'all'], oldCountries);
 
-    const newCountries: ICountry[] = [
+    const newCountries: Country[] = [
       {
         cca3: 'NOR',
         name: { common: 'Norway', official: 'Kingdom of Norway' },

@@ -3,24 +3,20 @@ import { CountryCard } from '../CountryCard/CountryCard';
 import { useCountriesStore } from '../../store/useCountriesStore';
 import classes from './CountriesCardsList.module.css';
 import { Loader } from '../Loader/Loader';
+import { Button } from '../Button/Button';
+import type { Country } from '../../shared/types';
 
-export interface ICountry {
-  cca3: string;
-  name: { common: string; official?: string };
-  flags: { png: string; svg: string; alt?: string };
-  capital?: string[];
-  region: string;
-  population: number;
-  subregion?: string;
-}
-
-interface IProps {
-  countries: ICountry[];
+interface CountriesCardsListProps {
+  countries: Country[];
   isLoading: boolean;
   error: string | null;
 }
 
-export function CardsList({ countries, isLoading, error }: IProps) {
+export function CardsList({
+  countries,
+  isLoading,
+  error,
+}: CountriesCardsListProps) {
   const location = useLocation();
   const { refreshCountries } = useCountriesStore();
 
@@ -29,7 +25,9 @@ export function CardsList({ countries, isLoading, error }: IProps) {
     return (
       <div className={classes.error}>
         <p>⚠️ {error}</p>
-        <button onClick={() => refreshCountries()}>Retry</button>
+        <Button variant="secondary" onClick={() => refreshCountries()}>
+          Retry
+        </Button>
       </div>
     );
   }

@@ -1,6 +1,8 @@
+import styles from './AboutPage.module.css';
+
 export function AboutPage() {
   return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
+    <div className={styles.container}>
       <h1>About This Application</h1>
       <p>Developer: [Alexander Shabanovich / shalick]</p>
       <p>
@@ -9,7 +11,7 @@ export function AboutPage() {
           href="https://rs.school"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: '#007bff', fontWeight: 'bold' }}
+          className={styles.link}
         >
           RS School React Course
         </a>

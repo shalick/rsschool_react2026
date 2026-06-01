@@ -4,9 +4,9 @@ import {
   fetchCountriesByName,
   fetchCountryByCode,
 } from './countriesApi';
-import type { ICountry } from '../components/CountriesCardsList/CountriesCardsList';
+import type { Country } from '../shared/types';
 
-const mockCountries: ICountry[] = [
+const mockCountries: Country[] = [
   {
     cca3: 'DEU',
     name: { common: 'Germany' },

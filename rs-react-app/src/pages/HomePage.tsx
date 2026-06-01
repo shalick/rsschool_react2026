@@ -7,6 +7,7 @@ import { Pagination } from '../components/Pagination/Pagination';
 import { ErrorBoundary } from '../components/ErrorBoundary/ErrorBoundary';
 import { ErrorSimulator } from '../components/ErrorSimulator/ErrorSimulator';
 import classes from './HomePage.module.css';
+import { Button } from '../components/Button/Button';
 
 export function HomePage() {
   const {
@@ -92,22 +93,13 @@ export function HomePage() {
                     marginBottom: '1rem',
                   }}
                 >
-                  <button
+                  <Button
+                    variant="secondary"
                     onClick={handleRefresh}
                     disabled={isLoading}
-                    style={{
-                      padding: '0.5rem 1rem',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc',
-                      background: '#f5f5f5',
-                      cursor: isLoading ? 'not-allowed' : 'pointer',
-                      opacity: isLoading ? 0.6 : 1,
-                      fontSize: '0.9rem',
-                      fontWeight: '500',
-                    }}
                   >
                     {isLoading ? '🔄 Refreshing...' : '🔄 Refresh'}
-                  </button>
+                  </Button>
                 </div>
                 <CardsList
                   countries={paginatedCountries}
@@ -132,20 +124,13 @@ export function HomePage() {
         </div>
       </ErrorBoundary>
 
-      <button
+      <Button
+        variant={simulateError ? 'secondary' : 'primary'}
         onClick={() => setSimulateError((prev) => !prev)}
         style={{
           position: 'fixed',
           bottom: '2rem',
           left: '2rem',
-          padding: '0.75rem 1.5rem',
-          background: simulateError ? '#42ba96' : '#ff6b6b',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           zIndex: 2000,
           transition: 'background-color 0.2s ease, transform 0.1s ease',
         }}
@@ -153,7 +138,7 @@ export function HomePage() {
         onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
       >
         {simulateError ? '🔄 Reset Error Simulation' : '⚠️ Test Error Boundary'}
-      </button>
+      </Button>
     </>
   );
 }

@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { queryClient } from '../query/queryClient';
 import { Loader } from '../components/Loader/Loader';
 import { fetchCountryByCode } from '../api/countriesApi';
+import styles from './CountryDetails.module.css';
+import { Button } from '../components/Button/Button';
 
 interface ICountryDetail {
   name: { common: string; official: string };
@@ -47,72 +49,39 @@ export function CountryDetails() {
 
   if (isError && !isFetching)
     return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
+      <div className={styles.errorContainer}>
         <h2>Country details could not be loaded</h2>
         <p>{error?.message ?? 'Please try again later.'}</p>
-        <button
+        <Button
+          variant="primary"
           onClick={handleClose}
-          style={{
-            marginTop: '1rem',
-            padding: '0.75rem 1.25rem',
-            borderRadius: '6px',
-            border: 'none',
-            backgroundColor: '#007bff',
-            color: '#fff',
-            cursor: 'pointer',
-          }}
+          className={styles.errorButton}
         >
           Return to country list
-        </button>
+        </Button>
       </div>
     );
 
   if (!country) return null;
 
   return (
-    <div style={{ padding: '1.5rem', position: 'relative' }}>
-      <button
+    <div className={styles.container}>
+      <Button
+        variant="secondary"
+        className={styles.refresh}
         onClick={handleRefresh}
-        style={{
-          position: 'absolute',
-          top: '1rem',
-          right: '4rem',
-          cursor: 'pointer',
-          background: 'none',
-          border: 'none',
-          fontSize: '0.9rem',
-          padding: '0.5rem 1rem',
-          borderRadius: '4px',
-          backgroundColor: '#f5f5f5',
-        }}
       >
         {isFetching ? '🔄 Refreshing...' : '🔄 Refresh'}
-      </button>
-      <button
-        onClick={handleClose}
-        style={{
-          position: 'absolute',
-          top: '1rem',
-          right: '1rem',
-          cursor: 'pointer',
-          background: 'none',
-          border: 'none',
-          fontSize: '1.2rem',
-        }}
-      >
+      </Button>
+      <Button variant="ghost" className={styles.close} onClick={handleClose}>
         ✕ Close
-      </button>
+      </Button>
 
       <h2>{country.name.official}</h2>
       <img
         src={country.flags.svg}
         alt={country.flags.alt || `Flag of ${country.name.common}`}
-        style={{
-          width: '100%',
-          maxWidth: '250px',
-          margin: '1rem 0',
-          borderRadius: '4px',
-        }}
+        className={styles.flag}
       />
       <p>
         <strong>Subregion:</strong> {country.subregion || 'N/A'}

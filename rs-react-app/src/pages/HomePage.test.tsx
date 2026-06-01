@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { HomePage } from './HomePage';
 import { useCountriesStore } from '../store/useCountriesStore';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import type { ICountry } from '../components/CountriesCardsList/CountriesCardsList';
+import type { Country } from '../shared/types';
 import { useParams, useLocation } from 'react-router-dom';
 
 const mockNavigate = vi.fn();
@@ -43,7 +43,7 @@ vi.mock('../components/CountriesCardsList/CountriesCardsList', () => ({
     isLoading,
     error,
   }: {
-    countries: ICountry[];
+    countries: Country[];
     isLoading: boolean;
     error: string | null;
   }) => (
@@ -116,7 +116,7 @@ vi.mock('../components/ErrorSimulator/ErrorSimulator', () => ({
 }));
 
 describe('HomePage', () => {
-  const mockCountries: ICountry[] = [
+  const mockCountries: Country[] = [
     {
       cca3: 'DEU',
       name: { common: 'Germany', official: 'Federal Republic of Germany' },

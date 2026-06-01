@@ -52,14 +52,15 @@ describe('ThemeContext', () => {
 
   describe('ThemeProvider', () => {
     it('should initialize theme from localStorage if exists', () => {
-      localStorageMock.getItem.mockReturnValueOnce('dark');
+      localStorageMock.getItem.mockReturnValueOnce('"dark"');
       render(
         <ThemeProvider>
           <ThemeConsumer />
         </ThemeProvider>
       );
       expect(screen.getByTestId('theme').textContent).toBe('dark');
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('theme', 'dark');
+      // initialization should respect stored value (no extra write required)
+      expect(localStorageMock.setItem).not.toHaveBeenCalled();
       expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
     });
 
@@ -99,7 +100,7 @@ describe('ThemeContext', () => {
       expect(screen.getByTestId('theme').textContent).toBe('dark');
       expect(localStorageMock.setItem).toHaveBeenLastCalledWith(
         'theme',
-        'dark'
+        '"dark"'
       );
       expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
     });
