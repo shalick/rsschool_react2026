@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Loader } from '../components/Loader/Loader';
@@ -14,22 +13,18 @@ interface ICountryDetail {
 export function CountryDetails() {
   const { countryCode } = useParams<{ countryCode: string }>();
   const navigate = useNavigate();
+  const normalizedCountryCode = countryCode?.toLowerCase();
 
   const queryResult = useQuery<ICountryDetail, Error>({
-    queryKey: ['country', countryCode],
-    queryFn: () => fetchCountryByCode(countryCode ?? ''),
-    enabled: Boolean(countryCode),
-    retry: false,
+    queryKey: ['country', normalizedCountryCode],
+    queryFn: () => fetchCountryByCode(normalizedCountryCode ?? ''),
+    enabled: Boolean(normalizedCountryCode),
+    refetchOnMount: 'always',
   });
 
   const country = queryResult.data as ICountryDetail | undefined;
-  const { isLoading, isError } = queryResult;
-
-  useEffect(() => {
-    if (isError) {
-      navigate('/page-not-found', { replace: true });
-    }
-  }, [isError, navigate]);
+  const { isLoading, isError, isFetching } = queryResult;
+  const error = queryResult.error;
 
   const handleClose = () => {
     navigate({ pathname: '/', search: window.location.search });
@@ -41,6 +36,29 @@ export function CountryDetails() {
         <Loader />
       </div>
     );
+
+  if (isError && !isFetching)
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h2>Country details could not be loaded</h2>
+        <p>{error?.message ?? 'Please try again later.'}</p>
+        <button
+          onClick={handleClose}
+          style={{
+            marginTop: '1rem',
+            padding: '0.75rem 1.25rem',
+            borderRadius: '6px',
+            border: 'none',
+            backgroundColor: '#007bff',
+            color: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          Return to country list
+        </button>
+      </div>
+    );
+
   if (!country) return null;
 
   return (

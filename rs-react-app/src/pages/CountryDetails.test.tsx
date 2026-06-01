@@ -1,5 +1,6 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CountryDetails } from './CountryDetails';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 
@@ -26,17 +27,31 @@ describe('CountryDetails Component', () => {
     vi.restoreAllMocks();
   });
 
+  const createQueryClient = () =>
+    new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    });
+
   const renderWithRouter = (code = 'deu') => {
     return render(
-      <MemoryRouter initialEntries={[`/countries/${code}`]}>
-        <Routes>
-          <Route path="/countries/:countryCode" element={<CountryDetails />} />
-          <Route
-            path="/page-not-found"
-            element={<div>404 Page Not Found</div>}
-          />
-        </Routes>
-      </MemoryRouter>
+      <QueryClientProvider client={createQueryClient()}>
+        <MemoryRouter initialEntries={[`/countries/${code}`]}>
+          <Routes>
+            <Route
+              path="/countries/:countryCode"
+              element={<CountryDetails />}
+            />
+            <Route
+              path="/page-not-found"
+              element={<div>404 Page Not Found</div>}
+            />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
     );
   };
 
@@ -128,7 +143,7 @@ describe('CountryDetails Component', () => {
     expect(naElements.length).toBe(2);
   });
 
-  it('should redirect to 404 page if API returns not ok response', async () => {
+  it('should render an inline error state if API returns not ok response', async () => {
     vi.mocked(fetch).mockResolvedValue({
       ok: false,
     } as Response);
@@ -136,12 +151,16 @@ describe('CountryDetails Component', () => {
     renderWithRouter('wrong-code');
 
     await waitFor(() => {
-      expect(screen.getByText('404 Page Not Found')).toBeInTheDocument();
+      expect(
+        screen.getByText('Country details could not be loaded')
+      ).toBeInTheDocument();
     });
-    expect(console.error).toHaveBeenCalled();
+    expect(
+      screen.getByRole('button', { name: 'Return to country list' })
+    ).toBeInTheDocument();
   });
 
-  it('should redirect to 404 page if API returns an empty data array', async () => {
+  it('should render an inline error state if API returns an empty data array', async () => {
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve([]),
@@ -150,7 +169,24 @@ describe('CountryDetails Component', () => {
     renderWithRouter('empty');
 
     await waitFor(() => {
-      expect(screen.getByText('404 Page Not Found')).toBeInTheDocument();
+      expect(
+        screen.getByText('Country details could not be loaded')
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('should successfully render country details when the code is uppercase', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockCountryData),
+    } as Response);
+
+    renderWithRouter('MEX');
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Federal Republic of Germany')
+      ).toBeInTheDocument();
     });
   });
 
@@ -161,15 +197,20 @@ describe('CountryDetails Component', () => {
     } as Response);
 
     render(
-      <MemoryRouter initialEntries={['/countries/deu?search=abc&page=2']}>
-        <Routes>
-          <Route path="/countries/:countryCode" element={<CountryDetails />} />
-          <Route
-            path="/"
-            element={<div>Returned to Main List Dashboard</div>}
-          />
-        </Routes>
-      </MemoryRouter>
+      <QueryClientProvider client={createQueryClient()}>
+        <MemoryRouter initialEntries={['/countries/deu?search=abc&page=2']}>
+          <Routes>
+            <Route
+              path="/countries/:countryCode"
+              element={<CountryDetails />}
+            />
+            <Route
+              path="/"
+              element={<div>Returned to Main List Dashboard</div>}
+            />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
     );
 
     await waitFor(() => {

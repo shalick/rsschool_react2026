@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchAllCountries, fetchCountriesByName } from './countriesApi';
+import {
+  fetchAllCountries,
+  fetchCountriesByName,
+  fetchCountryByCode,
+} from './countriesApi';
 import type { ICountry } from '../components/CountriesCardsList/CountriesCardsList';
 
 const mockCountries: ICountry[] = [
@@ -35,7 +39,7 @@ describe('countriesApi', () => {
       const result = await fetchAllCountries();
       expect(result).toEqual(mockCountries);
       expect(globalThis.fetch).toHaveBeenCalledWith(
-        '/api/v3.1/all?fields=name,flags,capital,region,population,cca3'
+        'https://restcountries.com/v3.1/all?fields=name,flags,capital,region,population,cca3'
       );
     });
 
@@ -115,7 +119,7 @@ describe('countriesApi', () => {
       const result = await fetchCountriesByName('Germany');
       expect(result).toEqual(mockCountries);
       expect(globalThis.fetch).toHaveBeenCalledWith(
-        '/api/v3.1/name/Germany?fields=name,flags,capital,region,population,cca3'
+        'https://restcountries.com/v3.1/name/Germany?fields=name,flags,capital,region,population,cca3'
       );
     });
 
@@ -151,6 +155,69 @@ describe('countriesApi', () => {
       );
       await expect(fetchCountriesByName('Germany')).rejects.toThrow(
         'Bad request. Please try again later.'
+      );
+    });
+  });
+
+  describe('fetchCountryByCode', () => {
+    it('returns a country when API returns an object', async () => {
+      const mockCountryData = {
+        name: { common: 'Mexico', official: 'United Mexican States' },
+        flags: { svg: 'mex.svg', alt: 'Mexican flag' },
+        subregion: 'North America',
+        languages: { spa: 'Spanish' },
+        cca3: 'MEX',
+      };
+
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: async () => mockCountryData,
+        })
+      );
+
+      const result = await fetchCountryByCode('mex');
+      expect(result).toEqual(mockCountryData);
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        'https://restcountries.com/v3.1/alpha/mex?fields=name,flags,subregion,languages,cca3'
+      );
+    });
+
+    it('returns a country when API returns an array', async () => {
+      const mockCountryData = [
+        {
+          name: { common: 'Mexico', official: 'United Mexican States' },
+          flags: { svg: 'mex.svg', alt: 'Mexican flag' },
+          subregion: 'North America',
+          languages: { spa: 'Spanish' },
+          cca3: 'MEX',
+        },
+      ];
+
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: async () => mockCountryData,
+        })
+      );
+
+      const result = await fetchCountryByCode('mex');
+      expect(result).toEqual(mockCountryData[0]);
+    });
+
+    it('throws a not found error when API returns empty array', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: async () => [],
+        })
+      );
+
+      await expect(fetchCountryByCode('unknown')).rejects.toThrow(
+        'Country not found in API'
       );
     });
   });

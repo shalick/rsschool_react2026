@@ -86,9 +86,17 @@ export async function fetchCountryByCode(
 
   const data = await response.json();
 
-  if (!Array.isArray(data) || data.length === 0) {
+  if (Array.isArray(data)) {
+    if (data.length === 0) {
+      throw new Error('Country not found in API');
+    }
+
+    return data[0];
+  }
+
+  if (!data || typeof data !== 'object') {
     throw new Error('Country not found in API');
   }
 
-  return data[0];
+  return data;
 }
