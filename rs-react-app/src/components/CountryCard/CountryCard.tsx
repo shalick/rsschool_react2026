@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useSelectionStore } from '../../store/useSelectionStore';
+import { queryClient } from '../../query/queryClient';
+import { fetchCountryByCode } from '../../api/countriesApi';
 import classes from './CountryCard.module.css';
 
 interface ICountryCard {
@@ -25,19 +27,33 @@ export const CountryCard = ({
   const navigate = useNavigate();
   const { selectedIds, toggleSelection } = useSelectionStore();
   const isSelected = selectedIds.has(cca3);
+  const countryCode = cca3.toLowerCase();
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     toggleSelection(cca3);
   };
 
+  const prefetchCountryDetails = () => {
+    queryClient.prefetchQuery({
+      queryKey: ['country', countryCode],
+      queryFn: () => fetchCountryByCode(countryCode),
+    });
+  };
+
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/${cca3.toLowerCase()}${currentSearch}`);
+    navigate(`/${countryCode}${currentSearch}`);
   };
 
   return (
-    <li className={classes.country} onClick={handleCardClick}>
+    <li
+      className={classes.country}
+      onClick={handleCardClick}
+      onMouseEnter={prefetchCountryDetails}
+      onFocus={prefetchCountryDetails}
+      tabIndex={0}
+    >
       <img
         src={flags.svg}
         alt={flags.alt || `Flag of ${name.common}`}

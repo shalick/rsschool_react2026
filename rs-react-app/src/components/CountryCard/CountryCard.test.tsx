@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { CountryCard } from './CountryCard';
 import { useSelectionStore } from '../../store/useSelectionStore';
+import { queryClient } from '../../query/queryClient';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 vi.mock('./CountryCard.module.css', () => ({
@@ -133,6 +134,20 @@ describe('CountryCard', () => {
     fireEvent.click(card);
     expect(mockNavigate).toHaveBeenCalledWith('/deu?page=2');
     expect(mockToggleSelection).not.toHaveBeenCalled();
+  });
+
+  it('prefetches country details when the card is focused or hovered', () => {
+    const prefetchSpy = vi.spyOn(queryClient, 'prefetchQuery');
+    renderWithRouter(<CountryCard {...mockCountry} />);
+    const card = screen.getByRole('listitem');
+
+    fireEvent.mouseEnter(card);
+    expect(prefetchSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: ['country', 'deu'],
+        queryFn: expect.any(Function),
+      })
+    );
   });
 
   it('prevents navigation when checkbox is clicked (stopPropagation works)', () => {
