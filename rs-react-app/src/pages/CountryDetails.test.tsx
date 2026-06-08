@@ -227,7 +227,7 @@ describe('CountryDetails Component', () => {
     ).toBeInTheDocument();
   });
 
-  it('should show refresh button and trigger refetch when clicked', async () => {
+  it('should refetch the country details when refresh is clicked', async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
 
@@ -239,16 +239,27 @@ describe('CountryDetails Component', () => {
     renderWithRouter('deu');
 
     await waitFor(() => {
-      expect(
-        screen.getByText('Federal Republic of Germany')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Federal Republic of Germany')).toBeInTheDocument();
     });
 
     const refreshButton = screen.getByRole('button', { name: /Refresh/i });
-    expect(refreshButton).toBeInTheDocument();
-
     fireEvent.click(refreshButton);
 
-    expect(refreshButton).toBeInTheDocument();
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('should display an error message when the country API request fails due to network error', async () => {
+    vi.mocked(fetch).mockRejectedValue(new Error('Network failure'));
+
+    renderWithRouter('deu');
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Country details could not be loaded')
+      ).toBeInTheDocument();
+    });
+    expect(screen.getByText(/Unable to connect to the server/i)).toBeInTheDocument();
   });
 });

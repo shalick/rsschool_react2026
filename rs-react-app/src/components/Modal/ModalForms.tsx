@@ -1,9 +1,16 @@
 import React, { useRef, useState, useMemo } from 'react';
-import { type SubmitHandler, useForm } from 'react-hook-form';
+import { type SubmitHandler, useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '../Button/Button';
 import { useCountriesStore } from '../../store/useCountriesStore';
+import {
+  type PasswordStrength,
+  checkPasswordStrength,
+  isPasswordStrong,
+  readFileAsDataURL,
+  validateImageFile,
+} from '../../utils/formUtils';
 import styles from './ModalForms.module.css';
 
 type Gender = 'male' | 'female';
@@ -21,25 +28,6 @@ type FormValues = {
   country: string;
 };
 
-interface PasswordStrength {
-  hasNumber: boolean;
-  hasUppercase: boolean;
-  hasLowercase: boolean;
-  hasSpecialChar: boolean;
-}
-
-const checkPasswordStrength = (password: string): PasswordStrength => {
-  return {
-    hasNumber: /\d/.test(password),
-    hasUppercase: /[A-Z]/.test(password),
-    hasLowercase: /[a-z]/.test(password),
-    hasSpecialChar: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
-  };
-};
-
-const isPasswordStrong = (strength: PasswordStrength): boolean => {
-  return Object.values(strength).every((v) => v);
-};
 
 const formSchema = z
   .object({
@@ -81,19 +69,6 @@ const formSchema = z
 
 type FormSchemaValues = z.infer<typeof formSchema>;
 
-const validateImageFile = (file: File): string => {
-  const validTypes = ['image/png', 'image/jpeg'];
-  const maxSize = 5 * 1024 * 1024; // 5MB
-
-  if (!validTypes.includes(file.type)) {
-    return 'Only PNG and JPEG images are allowed';
-  }
-  if (file.size > maxSize) {
-    return 'Image size must be less than 5MB';
-  }
-  return '';
-};
-
 interface ModalFormsProps {
   type: 'uncontrolled' | 'react-hook-form';
   onSubmit: (values: FormValues) => void;
@@ -125,7 +100,7 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
     watch,
     formState: { errors, isValid },
   } = useForm<FormSchemaValues>({
-    resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema) as Resolver<FormSchemaValues>,
     mode: 'onChange',
     defaultValues: {
       name: '',
@@ -145,6 +120,7 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
     <span className={styles.error}>{message ?? '\u00A0'}</span>
   );
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const password = watch('password');
   const passwordStrength = useMemo(() => checkPasswordStrength(password), [password]);
 
@@ -155,8 +131,9 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
     );
   }, [uncontrolledCountryFilter, countries]);
 
-  const handleUncontrolledImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleUncontrolledImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target as HTMLInputElement & { dataset: { base64?: string } };
+    const file = input.files?.[0];
     if (!file) return;
 
     const error = validateImageFile(file);
@@ -165,13 +142,8 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      // Store in a data attribute on the form for retrieval
-      (e.target as any).dataset.base64 = base64;
-    };
-    reader.readAsDataURL(file);
+    const base64 = await readFileAsDataURL(file);
+    input.dataset.base64 = base64;
     setUncontrolledImageError('');
   };
 
@@ -185,12 +157,8 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      setRhfImageBase64(base64);
-    };
-    reader.readAsDataURL(file);
+    const base64 = await readFileAsDataURL(file);
+    setRhfImageBase64(base64);
     setRhfImageError('');
   };
 
@@ -206,7 +174,7 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
     const age = typeof ageValue === 'string' && ageValue.trim() !== '' ? Number(ageValue) : 0;
 
     const imageInput = formRef.current?.querySelector<HTMLInputElement>('input[name="image"]');
-    const image = (imageInput as any)?.dataset?.base64 || '';
+    const image = imageInput?.dataset?.base64 ?? '';
 
     const payload = {
       name: (formData.get('name') as string) ?? '',

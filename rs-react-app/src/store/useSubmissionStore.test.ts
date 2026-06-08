@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { useSubmissionStore } from './useSubmissionStore';
 
 describe('useSubmissionStore', () => {
@@ -39,5 +39,50 @@ describe('useSubmissionStore', () => {
     });
     expect(submissions[0].id).toBeDefined();
     expect(submissions[0].submittedAt).toBeDefined();
+  });
+
+  it('clears submissions when clearSubmissions is called', () => {
+    useSubmissionStore.getState().addSubmission({
+      type: 'react-hook-form',
+      name: 'Bob',
+      age: 44,
+      email: 'bob@example.com',
+      gender: 'female',
+      acceptedTerms: true,
+      message: 'Test',
+      image: '',
+      password: 'SecurePass123!',
+      confirmPassword: 'SecurePass123!',
+      country: 'Canada',
+    });
+
+    useSubmissionStore.getState().clearSubmissions();
+    expect(useSubmissionStore.getState().submissions).toHaveLength(0);
+  });
+
+  it('clears the isNew flag after the highlight timeout expires', () => {
+    vi.useFakeTimers();
+
+    useSubmissionStore.getState().addSubmission({
+      type: 'uncontrolled',
+      name: 'Charlie',
+      age: 27,
+      email: 'charlie@example.com',
+      gender: 'male',
+      acceptedTerms: true,
+      message: 'Hello again',
+      image: '',
+      password: 'SecurePass123!',
+      confirmPassword: 'SecurePass123!',
+      country: 'United States',
+    });
+
+    const [submission] = useSubmissionStore.getState().submissions;
+    expect(submission.isNew).toBe(true);
+
+    vi.advanceTimersByTime(4000);
+    expect(useSubmissionStore.getState().submissions[0]?.isNew).toBe(false);
+
+    vi.useRealTimers();
   });
 });

@@ -297,7 +297,7 @@ describe('HomePage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Submission History/i)).toBeInTheDocument();
-      expect(screen.getByText(/uncontrolled/i)).toBeInTheDocument();
+      expect(screen.getByText(/^uncontrolled$/i)).toBeInTheDocument();
       expect(screen.getByText(/Submitted via uncontrolled/i)).toBeInTheDocument();
       expect(screen.getByText(/uncontrolled@example.com/i)).toBeInTheDocument();
     });
@@ -311,7 +311,7 @@ describe('HomePage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Submission History/i)).toBeInTheDocument();
-      expect(screen.getByText(/react-hook-form/i)).toBeInTheDocument();
+      expect(screen.getByText(/^react-hook-form$/i)).toBeInTheDocument();
       expect(screen.getByText(/Submitted via react-hook-form/i)).toBeInTheDocument();
       expect(screen.getByText(/react-hook-form@example.com/i)).toBeInTheDocument();
     });
