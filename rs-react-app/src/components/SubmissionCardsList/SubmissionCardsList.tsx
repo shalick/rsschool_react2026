@@ -24,7 +24,16 @@ export function SubmissionCardsList() {
               <strong>Name:</strong> {submission.name}
             </p>
             <p className={classes.field}>
+              <strong>Age:</strong> {submission.age}
+            </p>
+            <p className={classes.field}>
               <strong>Email:</strong> {submission.email}
+            </p>
+            <p className={classes.field}>
+              <strong>Gender:</strong> {submission.gender}
+            </p>
+            <p className={classes.field}>
+              <strong>Terms Accepted:</strong> {submission.acceptedTerms ? 'Yes' : 'No'}
             </p>
             <p className={classes.message}>
               <strong>Message:</strong> {submission.message}

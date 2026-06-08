@@ -76,7 +76,14 @@ export function HomePage() {
 
   const closeModal = () => setOpenFormType(null);
 
-  const handleFormSubmit = (values: { name: string; email: string; message: string }) => {
+  const handleFormSubmit = (values: {
+    name: string;
+    age: number;
+    email: string;
+    gender: 'male' | 'female';
+    acceptedTerms: boolean;
+    message: string;
+  }) => {
     addSubmission({ type: openFormType ?? 'uncontrolled', ...values });
     closeModal();
   };

@@ -12,7 +12,10 @@ describe('useSubmissionStore', () => {
     addSubmission({
       type: 'uncontrolled',
       name: 'Alice',
+      age: 32,
       email: 'alice@example.com',
+      gender: 'female',
+      acceptedTerms: true,
       message: 'Hello world',
     });
 
@@ -21,7 +24,10 @@ describe('useSubmissionStore', () => {
     expect(submissions[0]).toMatchObject({
       type: 'uncontrolled',
       name: 'Alice',
+      age: 32,
       email: 'alice@example.com',
+      gender: 'female',
+      acceptedTerms: true,
       message: 'Hello world',
     });
     expect(submissions[0].id).toBeDefined();
