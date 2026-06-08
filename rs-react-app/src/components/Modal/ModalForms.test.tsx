@@ -297,7 +297,7 @@ describe('ModalForms', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Submit Uncontrolled Form/i }));
 
-    expect(global.alert).toHaveBeenCalled();
+    expect(globalThis.alert).toHaveBeenCalled();
     expect(handleSubmit).not.toHaveBeenCalled();
   });
 

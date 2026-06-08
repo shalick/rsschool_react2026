@@ -53,7 +53,7 @@ describe('formUtils', () => {
       onerror: ((event: ProgressEvent<FileReader>) => void) | null = null;
       result = 'data:image/png;base64,AAAA';
       readAsDataURL() {
-        this.onload?.({ target: this } as ProgressEvent<FileReader>);
+        this.onload?.({ target: this } as unknown as ProgressEvent<FileReader>);
       }
     }
 

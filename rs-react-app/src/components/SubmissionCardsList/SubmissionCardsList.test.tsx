@@ -4,6 +4,12 @@ import { SubmissionCardsList } from './SubmissionCardsList';
 import type { Submission } from '../../store/useSubmissionStore';
 import { useSubmissionStore } from '../../store/useSubmissionStore';
 
+type LocalSubmissionState = {
+  submissions: Submission[];
+  addSubmission: () => void;
+  clearSubmissions: () => void;
+};
+
 vi.mock('../../store/useSubmissionStore', () => ({
   useSubmissionStore: vi.fn(),
 }));
@@ -35,8 +41,12 @@ describe('SubmissionCardsList component', () => {
 
   it('renders empty state when there are no submissions', () => {
     mockedUseSubmissionStore.mockImplementation(
-      (selector: (state: { submissions: Submission[] }) => unknown) =>
-        selector({ submissions: [] })
+      (selector: (state: LocalSubmissionState) => unknown) =>
+        selector({
+          submissions: [],
+          addSubmission: () => undefined,
+          clearSubmissions: () => undefined,
+        })
     );
 
     render(<SubmissionCardsList />);
@@ -45,7 +55,7 @@ describe('SubmissionCardsList component', () => {
   });
 
   it('renders submission cards with image, masked password, and new state classes', () => {
-    const submission = {
+    const submission: Submission = {
       id: 'submission-1',
       type: 'react-hook-form',
       name: 'Alice',
@@ -63,8 +73,12 @@ describe('SubmissionCardsList component', () => {
     };
 
     mockedUseSubmissionStore.mockImplementation(
-      (selector: (state: { submissions: Submission[] }) => unknown) =>
-        selector({ submissions: [submission] })
+      (selector: (state: LocalSubmissionState) => unknown) =>
+        selector({
+          submissions: [submission],
+          addSubmission: () => undefined,
+          clearSubmissions: () => undefined,
+        })
     );
 
     render(<SubmissionCardsList />);
