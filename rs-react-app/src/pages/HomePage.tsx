@@ -83,6 +83,10 @@ export function HomePage() {
     gender: 'male' | 'female';
     acceptedTerms: boolean;
     message: string;
+    image: string;
+    password: string;
+    confirmPassword: string;
+    country: string;
   }) => {
     addSubmission({ type: openFormType ?? 'uncontrolled', ...values });
     closeModal();

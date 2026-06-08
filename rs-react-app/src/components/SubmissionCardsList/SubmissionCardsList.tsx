@@ -35,6 +35,25 @@ export function SubmissionCardsList() {
             <p className={classes.field}>
               <strong>Terms Accepted:</strong> {submission.acceptedTerms ? 'Yes' : 'No'}
             </p>
+            {submission.image && (
+              <div className={classes.imageContainer}>
+                <img
+                  src={submission.image}
+                  alt="Uploaded by {submission.name}"
+                  className={classes.image}
+                />
+              </div>
+            )}
+            {submission.country && (
+              <p className={classes.field}>
+                <strong>Country:</strong> {submission.country}
+              </p>
+            )}
+            {submission.password && (
+              <p className={classes.field}>
+                <strong>Password:</strong> {'*'.repeat(Math.min(submission.password.length, 8))}
+              </p>
+            )}
             <p className={classes.message}>
               <strong>Message:</strong> {submission.message}
             </p>

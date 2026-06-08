@@ -13,6 +13,10 @@ export interface Submission {
   gender: Gender;
   acceptedTerms: boolean;
   message: string;
+  image: string; // base64
+  password: string;
+  confirmPassword: string;
+  country: string;
   submittedAt: string;
 }
 

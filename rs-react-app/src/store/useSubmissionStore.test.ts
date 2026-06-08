@@ -17,6 +17,10 @@ describe('useSubmissionStore', () => {
       gender: 'female',
       acceptedTerms: true,
       message: 'Hello world',
+      image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      password: 'SecurePass123!',
+      confirmPassword: 'SecurePass123!',
+      country: 'United States',
     });
 
     const submissions = useSubmissionStore.getState().submissions;
@@ -29,6 +33,8 @@ describe('useSubmissionStore', () => {
       gender: 'female',
       acceptedTerms: true,
       message: 'Hello world',
+      password: 'SecurePass123!',
+      country: 'United States',
     });
     expect(submissions[0].id).toBeDefined();
     expect(submissions[0].submittedAt).toBeDefined();
