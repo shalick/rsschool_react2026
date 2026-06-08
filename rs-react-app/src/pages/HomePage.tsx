@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useCountriesStore } from '../store/useCountriesStore';
+import { useSubmissionStore } from '../store/useSubmissionStore';
 import { CardsList } from '../components/CountriesCardsList/CountriesCardsList';
 import { Search } from '../components/Search/Search';
 import { Pagination } from '../components/Pagination/Pagination';
@@ -8,6 +9,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary/ErrorBoundary';
 import { ErrorSimulator } from '../components/ErrorSimulator/ErrorSimulator';
 import { Modal } from '../components/Modal/Modal';
 import { ModalForms } from '../components/Modal/ModalForms';
+import { SubmissionCardsList } from '../components/SubmissionCardsList/SubmissionCardsList';
 import classes from './HomePage.module.css';
 import { Button } from '../components/Button/Button';
 
@@ -70,11 +72,12 @@ export function HomePage() {
 
   const [simulateError, setSimulateError] = useState(false);
   const [openFormType, setOpenFormType] = useState<'uncontrolled' | 'react-hook-form' | null>(null);
+  const addSubmission = useSubmissionStore((state) => state.addSubmission);
 
   const closeModal = () => setOpenFormType(null);
 
   const handleFormSubmit = (values: { name: string; email: string; message: string }) => {
-    console.log('Form submitted:', values);
+    addSubmission({ type: openFormType ?? 'uncontrolled', ...values });
     closeModal();
   };
 
@@ -148,6 +151,7 @@ export function HomePage() {
                     />
                   )}
                 </Modal>
+                <SubmissionCardsList />
                 {!isLoading && !error && totalPages > 1 && (
                   <Pagination
                     currentPage={currentPage}
