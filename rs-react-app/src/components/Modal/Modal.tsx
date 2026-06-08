@@ -46,6 +46,18 @@ export function Modal({ open, title, children, onClose }: ModalProps) {
         return;
       }
 
+      if (event.key === 'Backspace') {
+        const activeElement = document.activeElement as HTMLElement | null;
+        const editableTags = ['INPUT', 'TEXTAREA', 'SELECT'];
+
+        if (
+          !activeElement ||
+          (!editableTags.includes(activeElement.tagName) && !activeElement.isContentEditable)
+        ) {
+          event.preventDefault();
+        }
+      }
+
       if (event.key !== 'Tab' || !contentRef.current || !focusable?.length) {
         return;
       }

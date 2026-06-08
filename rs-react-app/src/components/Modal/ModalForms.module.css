@@ -58,6 +58,17 @@
   cursor: pointer;
 }
 
+.checkboxLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.field > .checkboxLabel {
+  margin-bottom: 0.25rem;
+}
+
 .strengthIndicator {
   display: flex;
   gap: 0.5rem;

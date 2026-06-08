@@ -6,7 +6,7 @@ import { Button } from '../Button/Button';
 import { useCountriesStore } from '../../store/useCountriesStore';
 import styles from './ModalForms.module.css';
 
-type Gender = 'male' | 'female' | 'other';
+type Gender = 'male' | 'female';
 
 type FormValues = {
   name: string;
@@ -50,7 +50,7 @@ const formSchema = z
       .refine((value) => !Number.isNaN(value), { message: 'Age is required' })
       .min(0, 'Age must be 0 or greater'),
     email: z.string().email('Enter a valid email'),
-    gender: z.enum(['male', 'female', 'other'] as const),
+    gender: z.enum(['male', 'female'] as const),
     acceptedTerms: z.boolean().refine((value) => value === true, {
       message: 'You must accept Terms and Conditions',
     }),
@@ -298,22 +298,23 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
           >
             <option value="male">Male</option>
             <option value="female">Female</option>
-            <option value="other">Other</option>
           </select>
           {renderError(errors.gender?.message)}
         </label>
 
-        <label className={styles.field} htmlFor="acceptedTerms">
-          <input
-            id="acceptedTerms"
-            className={styles.checkbox}
-            type="checkbox"
-            {...register('acceptedTerms')}
-            aria-invalid={errors.acceptedTerms ? 'true' : 'false'}
-          />
-          <span className={styles.label}>Accept Terms and Conditions</span>
-        </label>
-        {renderError(errors.acceptedTerms?.message)}
+        <div className={styles.field}>
+          <label className={styles.checkboxLabel} htmlFor="acceptedTerms">
+            <input
+              id="acceptedTerms"
+              className={styles.checkbox}
+              type="checkbox"
+              {...register('acceptedTerms')}
+              aria-invalid={errors.acceptedTerms ? 'true' : 'false'}
+            />
+            <span className={styles.label}>Accept Terms and Conditions</span>
+          </label>
+          {renderError(errors.acceptedTerms?.message)}
+        </div>
 
         <label className={styles.field} htmlFor="image">
           <span className={styles.label}>Upload Image (PNG/JPEG, max 5MB)</span>
@@ -446,19 +447,20 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
         <select id="gender" className={styles.input} name="gender">
           <option value="male">Male</option>
           <option value="female">Female</option>
-          <option value="other">Other</option>
         </select>
       </label>
 
-      <label className={styles.field} htmlFor="acceptedTerms">
-        <input
-          id="acceptedTerms"
-          className={styles.checkbox}
-          type="checkbox"
-          name="acceptedTerms"
-        />
-        <span className={styles.label}>Accept Terms and Conditions</span>
-      </label>
+      <div className={styles.field}>
+        <label className={styles.checkboxLabel} htmlFor="acceptedTerms">
+          <input
+            id="acceptedTerms"
+            className={styles.checkbox}
+            type="checkbox"
+            name="acceptedTerms"
+          />
+          <span className={styles.label}>Accept Terms and Conditions</span>
+        </label>
+      </div>
 
       <label className={styles.field} htmlFor="image">
         <span className={styles.label}>Upload Image (PNG/JPEG, max 5MB)</span>

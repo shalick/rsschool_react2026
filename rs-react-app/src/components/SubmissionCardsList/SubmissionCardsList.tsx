@@ -13,7 +13,10 @@ export function SubmissionCardsList() {
       <h3 className={classes.heading}>Submission History</h3>
       <div className={classes.grid}>
         {submissions.map((submission) => (
-          <article key={submission.id} className={classes.card}>
+          <article
+            key={submission.id}
+            className={`${classes.card} ${submission.isNew ? classes.newCard : ''}`}
+          >
             <div className={classes.cardHeader}>
               <span className={classes.type}>{submission.type}</span>
               <time dateTime={submission.submittedAt} className={classes.time}>

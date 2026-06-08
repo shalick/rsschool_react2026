@@ -125,6 +125,7 @@ export function HomePage() {
                     Open React Hook Form
                   </Button>
                 </div>
+                <SubmissionCardsList />
                 <div
                   style={{
                     display: 'flex',
@@ -162,7 +163,6 @@ export function HomePage() {
                     />
                   )}
                 </Modal>
-                <SubmissionCardsList />
                 {!isLoading && !error && totalPages > 1 && (
                   <Pagination
                     currentPage={currentPage}

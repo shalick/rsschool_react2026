@@ -35,6 +35,7 @@ describe('useSubmissionStore', () => {
       message: 'Hello world',
       password: 'SecurePass123!',
       country: 'United States',
+      isNew: true,
     });
     expect(submissions[0].id).toBeDefined();
     expect(submissions[0].submittedAt).toBeDefined();
