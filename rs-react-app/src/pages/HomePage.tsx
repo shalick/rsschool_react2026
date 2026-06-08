@@ -6,6 +6,8 @@ import { Search } from '../components/Search/Search';
 import { Pagination } from '../components/Pagination/Pagination';
 import { ErrorBoundary } from '../components/ErrorBoundary/ErrorBoundary';
 import { ErrorSimulator } from '../components/ErrorSimulator/ErrorSimulator';
+import { Modal } from '../components/Modal/Modal';
+import { ModalForms } from '../components/Modal/ModalForms';
 import classes from './HomePage.module.css';
 import { Button } from '../components/Button/Button';
 
@@ -67,6 +69,14 @@ export function HomePage() {
   };
 
   const [simulateError, setSimulateError] = useState(false);
+  const [openFormType, setOpenFormType] = useState<'uncontrolled' | 'react-hook-form' | null>(null);
+
+  const closeModal = () => setOpenFormType(null);
+
+  const handleFormSubmit = (values: { name: string; email: string; message: string }) => {
+    console.log('Form submitted:', values);
+    closeModal();
+  };
 
   return (
     <>
@@ -85,6 +95,22 @@ export function HomePage() {
                   onSearchChange={changeSearch}
                   onSearch={(val) => changeSearch(val)}
                 />
+                <div className={classes.modalActions}>
+                  <Button
+                    variant="primary"
+                    onClick={() => setOpenFormType('uncontrolled')}
+                    disabled={isLoading}
+                  >
+                    Open Uncontrolled Form
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setOpenFormType('react-hook-form')}
+                    disabled={isLoading}
+                  >
+                    Open React Hook Form
+                  </Button>
+                </div>
                 <div
                   style={{
                     display: 'flex',
@@ -106,6 +132,22 @@ export function HomePage() {
                   isLoading={isLoading}
                   error={error}
                 />
+                <Modal
+                  open={Boolean(openFormType)}
+                  title={
+                    openFormType === 'react-hook-form'
+                      ? 'React Hook Form'
+                      : 'Uncontrolled Form'
+                  }
+                  onClose={closeModal}
+                >
+                  {openFormType && (
+                    <ModalForms
+                      type={openFormType}
+                      onSubmit={handleFormSubmit}
+                    />
+                  )}
+                </Modal>
                 {!isLoading && !error && totalPages > 1 && (
                   <Pagination
                     currentPage={currentPage}
