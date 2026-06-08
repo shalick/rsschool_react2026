@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 export type SubmissionType = 'uncontrolled' | 'react-hook-form';
 
-export type Gender = 'male' | 'female';
+export type Gender = 'male' | 'female' | 'other';
 
 export interface Submission {
   id: string;

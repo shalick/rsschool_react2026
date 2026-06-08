@@ -1,10 +1,12 @@
 import React, { useRef, useState, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { type SubmitHandler, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '../Button/Button';
 import { useCountriesStore } from '../../store/useCountriesStore';
 import styles from './ModalForms.module.css';
 
-type Gender = 'male' | 'female';
+type Gender = 'male' | 'female' | 'other';
 
 type FormValues = {
   name: string;
@@ -39,6 +41,46 @@ const isPasswordStrong = (strength: PasswordStrength): boolean => {
   return Object.values(strength).every((v) => v);
 };
 
+const formSchema = z
+  .object({
+    name: z.string().min(1, 'Name is required'),
+    age: z
+      .coerce
+      .number()
+      .refine((value) => !Number.isNaN(value), { message: 'Age is required' })
+      .min(0, 'Age must be 0 or greater'),
+    email: z.string().email('Enter a valid email'),
+    gender: z.enum(['male', 'female', 'other'] as const),
+    acceptedTerms: z.boolean().refine((value) => value === true, {
+      message: 'You must accept Terms and Conditions',
+    }),
+    message: z.string().min(1, 'Message is required'),
+    image: z.string().optional().default(''),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+    country: z.string().min(1, 'Select a country'),
+  })
+  .superRefine((data, ctx) => {
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['confirmPassword'],
+        message: 'Passwords do not match',
+      });
+    }
+
+    if (data.password && !isPasswordStrong(checkPasswordStrength(data.password))) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['password'],
+        message:
+          'Password must contain at least one number, one uppercase letter, one lowercase letter, and one special character',
+      });
+    }
+  });
+
+type FormSchemaValues = z.infer<typeof formSchema>;
+
 const validateImageFile = (file: File): string => {
   const validTypes = ['image/png', 'image/jpeg'];
   const maxSize = 5 * 1024 * 1024; // 5MB
@@ -69,6 +111,7 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
     }
   );
   const [uncontrolledCountryFilter, setUncontrolledCountryFilter] = useState('');
+  const [selectedUncontrolledCountry, setSelectedUncontrolledCountry] = useState('');
   const [showUncontrolledCountries, setShowUncontrolledCountries] = useState(false);
   const [rhfImageBase64, setRhfImageBase64] = useState('');
   const [rhfImageError, setRhfImageError] = useState('');
@@ -80,8 +123,10 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
     handleSubmit,
     reset,
     watch,
-    formState: { errors },
-  } = useForm<FormValues>({
+    formState: { errors, isValid },
+  } = useForm<FormSchemaValues>({
+    resolver: zodResolver(formSchema) as any,
+    mode: 'onChange',
     defaultValues: {
       name: '',
       age: 0,
@@ -95,6 +140,10 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
       country: '',
     },
   });
+
+  const renderError = (message?: string) => (
+    <span className={styles.error}>{message ?? '\u00A0'}</span>
+  );
 
   const password = watch('password');
   const passwordStrength = useMemo(() => checkPasswordStrength(password), [password]);
@@ -159,22 +208,7 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
     const imageInput = formRef.current?.querySelector<HTMLInputElement>('input[name="image"]');
     const image = (imageInput as any)?.dataset?.base64 || '';
 
-    const password = (formData.get('password') as string) ?? '';
-    const confirmPassword = (formData.get('confirmPassword') as string) ?? '';
-
-    if (password !== confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
-
-    if (password && !isPasswordStrong(checkPasswordStrength(password))) {
-      alert(
-        'Password must contain at least one number, one uppercase letter, one lowercase letter, and one special character'
-      );
-      return;
-    }
-
-    onSubmit({
+    const payload = {
       name: (formData.get('name') as string) ?? '',
       age,
       email: (formData.get('email') as string) ?? '',
@@ -182,34 +216,31 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
       acceptedTerms: formData.get('acceptedTerms') === 'on',
       message: (formData.get('message') as string) ?? '',
       image,
-      password,
-      confirmPassword,
-      country: (formData.get('countryName') as string) ?? '',
-    });
+      password: (formData.get('password') as string) ?? '',
+      confirmPassword: (formData.get('confirmPassword') as string) ?? '',
+      country: selectedUncontrolledCountry || uncontrolledCountryFilter,
+    };
+
+    const validation = formSchema.safeParse(payload);
+    if (!validation.success) {
+      alert(validation.error.issues[0]?.message ?? 'Validation failed');
+      return;
+    }
+
+    onSubmit(validation.data as FormValues);
 
     event.currentTarget.reset();
     setUncontrolledCountryFilter('');
+    setSelectedUncontrolledCountry('');
     setShowUncontrolledCountries(false);
     formRef.current?.querySelector<HTMLInputElement>('input[name="name"]')?.focus();
   };
 
-  const handleHookFormSubmit = (values: FormValues) => {
-    if (values.password !== values.confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
-
-    if (values.password && !isPasswordStrong(checkPasswordStrength(values.password))) {
-      alert(
-        'Password must contain at least one number, one uppercase letter, one lowercase letter, and one special character'
-      );
-      return;
-    }
-
+  const handleHookFormSubmit: SubmitHandler<FormSchemaValues> = (values) => {
     onSubmit({
       ...values,
       image: rhfImageBase64,
-    });
+    } as FormValues);
     reset();
     setRhfImageBase64('');
   };
@@ -226,10 +257,10 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
           <input
             id="name"
             className={styles.input}
-            {...register('name', { required: 'Name is required' })}
+            {...register('name')}
             aria-invalid={errors.name ? 'true' : 'false'}
           />
-          {errors.name && <span className={styles.error}>{errors.name.message}</span>}
+          {renderError(errors.name?.message)}
         </label>
 
         <label className={styles.field} htmlFor="age">
@@ -239,14 +270,10 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
             className={styles.input}
             type="number"
             min={0}
-            {...register('age', {
-              valueAsNumber: true,
-              required: 'Age is required',
-              min: { value: 0, message: 'Age must be 0 or greater' },
-            })}
+            {...register('age', { valueAsNumber: true })}
             aria-invalid={errors.age ? 'true' : 'false'}
           />
-          {errors.age && <span className={styles.error}>{errors.age.message}</span>}
+          {renderError(errors.age?.message)}
         </label>
 
         <label className={styles.field} htmlFor="email">
@@ -255,16 +282,10 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
             id="email"
             className={styles.input}
             type="email"
-            {...register('email', {
-              required: 'Email is required',
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: 'Enter a valid email',
-              },
-            })}
+            {...register('email')}
             aria-invalid={errors.email ? 'true' : 'false'}
           />
-          {errors.email && <span className={styles.error}>{errors.email.message}</span>}
+          {renderError(errors.email?.message)}
         </label>
 
         <label className={styles.field} htmlFor="gender">
@@ -272,14 +293,14 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
           <select
             id="gender"
             className={styles.input}
-            {...register('gender', { required: 'Select a gender' })}
+            {...register('gender')}
             aria-invalid={errors.gender ? 'true' : 'false'}
           >
             <option value="male">Male</option>
             <option value="female">Female</option>
             <option value="other">Other</option>
           </select>
-          {errors.gender && <span className={styles.error}>{errors.gender.message}</span>}
+          {renderError(errors.gender?.message)}
         </label>
 
         <label className={styles.field} htmlFor="acceptedTerms">
@@ -287,16 +308,12 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
             id="acceptedTerms"
             className={styles.checkbox}
             type="checkbox"
-            {...register('acceptedTerms', {
-              required: 'You must accept Terms and Conditions',
-            })}
+            {...register('acceptedTerms')}
             aria-invalid={errors.acceptedTerms ? 'true' : 'false'}
           />
           <span className={styles.label}>Accept Terms and Conditions</span>
         </label>
-        {errors.acceptedTerms && (
-          <span className={styles.error}>{errors.acceptedTerms.message}</span>
-        )}
+        {renderError(errors.acceptedTerms?.message)}
 
         <label className={styles.field} htmlFor="image">
           <span className={styles.label}>Upload Image (PNG/JPEG, max 5MB)</span>
@@ -307,7 +324,7 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
             accept="image/png,image/jpeg"
             onChange={handleRhfImageChange}
           />
-          {rhfImageError && <span className={styles.error}>{rhfImageError}</span>}
+          {renderError(rhfImageError)}
         </label>
 
         <label className={styles.field} htmlFor="password">
@@ -316,13 +333,10 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
             id="password"
             className={styles.input}
             type="password"
-            {...register('password', {
-              required: 'Password is required',
-              minLength: { value: 8, message: 'Password must be at least 8 characters' },
-            })}
+            {...register('password')}
             aria-invalid={errors.password ? 'true' : 'false'}
           />
-          {errors.password && <span className={styles.error}>{errors.password.message}</span>}
+          {renderError(errors.password?.message)}
           {password && (
             <div className={styles.strengthIndicator}>
               <div
@@ -363,14 +377,10 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
             id="confirmPassword"
             className={styles.input}
             type="password"
-            {...register('confirmPassword', {
-              required: 'Please confirm your password',
-            })}
+            {...register('confirmPassword')}
             aria-invalid={errors.confirmPassword ? 'true' : 'false'}
           />
-          {errors.confirmPassword && (
-            <span className={styles.error}>{errors.confirmPassword.message}</span>
-          )}
+          {renderError(errors.confirmPassword?.message)}
         </label>
 
         <label className={styles.field} htmlFor="country">
@@ -378,7 +388,7 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
           <select
             id="country"
             className={styles.input}
-            {...register('country', { required: 'Select a country' })}
+            {...register('country')}
             aria-invalid={errors.country ? 'true' : 'false'}
           >
             <option value="">-- Select a country --</option>
@@ -388,7 +398,7 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
               </option>
             ))}
           </select>
-          {errors.country && <span className={styles.error}>{errors.country.message}</span>}
+          {renderError(errors.country?.message)}
         </label>
 
         <label className={styles.field} htmlFor="message">
@@ -397,13 +407,15 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
             id="message"
             className={styles.textarea}
             rows={4}
-            {...register('message', { required: 'Message is required' })}
+            {...register('message')}
             aria-invalid={errors.message ? 'true' : 'false'}
           />
-          {errors.message && <span className={styles.error}>{errors.message.message}</span>}
+          {renderError(errors.message?.message)}
         </label>
 
-        <Button type="submit">Submit React Hook Form</Button>
+        <Button type="submit" disabled={!isValid || Boolean(rhfImageError)}>
+          Submit React Hook Form
+        </Button>
       </form>
     );
   }
@@ -527,6 +539,7 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
           value={uncontrolledCountryFilter}
           onChange={(e) => {
             setUncontrolledCountryFilter(e.target.value);
+            setSelectedUncontrolledCountry('');
             setShowUncontrolledCountries(true);
           }}
           onFocus={() => setShowUncontrolledCountries(true)}
@@ -538,14 +551,9 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
                 key={country.cca3}
                 className={styles.dropdownItem}
                 onClick={() => {
-                  setUncontrolledCountryFilter('');
+                  setUncontrolledCountryFilter(country.name.common);
+                  setSelectedUncontrolledCountry(country.name.common);
                   setShowUncontrolledCountries(false);
-                  const countryInput = formRef.current?.querySelector<HTMLInputElement>(
-                    'input[name="countryName"]'
-                  );
-                  if (countryInput) {
-                    countryInput.value = country.name.common;
-                  }
                 }}
               >
                 {country.name.common}
@@ -556,9 +564,8 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
         <input
           type="hidden"
           name="country"
-          value={uncontrolledCountryFilter}
+          value={selectedUncontrolledCountry}
         />
-        <input type="hidden" name="countryName" />
       </label>
 
       <label className={styles.field} htmlFor="message">

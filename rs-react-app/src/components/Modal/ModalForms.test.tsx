@@ -1,5 +1,13 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+
+beforeEach(() => {
+  vi.stubGlobal('alert', vi.fn());
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 vi.mock('./ModalForms.module.css', () => ({
   default: {
@@ -53,6 +61,9 @@ describe('ModalForms', () => {
     });
     fireEvent.change(screen.getByLabelText('Gender'), { target: { value: 'female' } });
     fireEvent.click(screen.getByLabelText('Accept Terms and Conditions'));
+    fireEvent.change(screen.getByLabelText('Country'), {
+      target: { value: 'United States' },
+    });
     fireEvent.change(screen.getByLabelText('Password'), {
       target: { value: 'SecurePass123!' },
     });
@@ -75,7 +86,7 @@ describe('ModalForms', () => {
       image: '',
       password: 'SecurePass123!',
       confirmPassword: 'SecurePass123!',
-      country: '',
+      country: 'United States',
     });
   });
 
@@ -113,7 +124,12 @@ describe('ModalForms', () => {
       target: { value: 'React Hook Form message' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /Submit React Hook Form/i }));
+    const submitButton = screen.getByRole('button', { name: /Submit React Hook Form/i });
+    await waitFor(() => {
+      expect(submitButton).not.toBeDisabled();
+    });
+
+    fireEvent.click(submitButton);
 
     await waitFor(() => {
       expect(handleSubmit).toHaveBeenCalledWith({
@@ -128,6 +144,44 @@ describe('ModalForms', () => {
         confirmPassword: 'SecurePass456!',
         country: 'United States',
       });
+    });
+  });
+
+  it('disables React Hook Form submit until the schema is valid and shows validation errors without layout shift', async () => {
+    const handleSubmit = vi.fn();
+
+    render(<ModalForms type="react-hook-form" onSubmit={handleSubmit} />);
+
+    const submitButton = screen.getByRole('button', { name: /Submit React Hook Form/i });
+    expect(submitButton).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Charlie' } });
+    fireEvent.change(screen.getByLabelText('Age'), { target: { value: '45' } });
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: 'charlie@example.com' },
+    });
+    fireEvent.click(screen.getByLabelText('Accept Terms and Conditions'));
+    const passwordInputs = screen.getAllByLabelText(/Password/i, { selector: 'input' });
+    fireEvent.change(passwordInputs[0], { target: { value: 'short' } });
+    fireEvent.change(passwordInputs[1], { target: { value: 'short' } });
+    fireEvent.change(screen.getByLabelText('Country'), {
+      target: { value: 'United States' },
+    });
+    fireEvent.change(screen.getByLabelText('Message'), {
+      target: { value: 'Validation test' },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Password must be at least 8 characters/i)).toBeInTheDocument();
+    });
+    expect(submitButton).toBeDisabled();
+
+    const updatedPasswordInputs = screen.getAllByLabelText(/Password/i, { selector: 'input' });
+    fireEvent.change(updatedPasswordInputs[0], { target: { value: 'ValidPass123!' } });
+    fireEvent.change(updatedPasswordInputs[1], { target: { value: 'ValidPass123!' } });
+
+    await waitFor(() => {
+      expect(submitButton).not.toBeDisabled();
     });
   });
 });

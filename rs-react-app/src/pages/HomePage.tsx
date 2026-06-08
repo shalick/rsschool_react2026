@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useCountriesStore } from '../store/useCountriesStore';
-import { useSubmissionStore } from '../store/useSubmissionStore';
+import { useSubmissionStore, type Gender } from '../store/useSubmissionStore';
 import { CardsList } from '../components/CountriesCardsList/CountriesCardsList';
 import { Search } from '../components/Search/Search';
 import { Pagination } from '../components/Pagination/Pagination';
@@ -80,7 +80,7 @@ export function HomePage() {
     name: string;
     age: number;
     email: string;
-    gender: 'male' | 'female';
+    gender: Gender;
     acceptedTerms: boolean;
     message: string;
     image: string;
