@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useCountriesStore } from '../store/useCountriesStore';
+import { useSubmissionStore, type Gender } from '../store/useSubmissionStore';
 import { CardsList } from '../components/CountriesCardsList/CountriesCardsList';
 import { Search } from '../components/Search/Search';
 import { Pagination } from '../components/Pagination/Pagination';
 import { ErrorBoundary } from '../components/ErrorBoundary/ErrorBoundary';
 import { ErrorSimulator } from '../components/ErrorSimulator/ErrorSimulator';
+import { Modal } from '../components/Modal/Modal';
+import { ModalForms } from '../components/Modal/ModalForms';
+import { SubmissionCardsList } from '../components/SubmissionCardsList/SubmissionCardsList';
 import classes from './HomePage.module.css';
 import { Button } from '../components/Button/Button';
 
@@ -67,6 +71,26 @@ export function HomePage() {
   };
 
   const [simulateError, setSimulateError] = useState(false);
+  const [openFormType, setOpenFormType] = useState<'uncontrolled' | 'react-hook-form' | null>(null);
+  const addSubmission = useSubmissionStore((state) => state.addSubmission);
+
+  const closeModal = () => setOpenFormType(null);
+
+  const handleFormSubmit = (values: {
+    name: string;
+    age: number;
+    email: string;
+    gender: Gender;
+    acceptedTerms: boolean;
+    message: string;
+    image: string;
+    password: string;
+    confirmPassword: string;
+    country: string;
+  }) => {
+    addSubmission({ type: openFormType ?? 'uncontrolled', ...values });
+    closeModal();
+  };
 
   return (
     <>
@@ -85,6 +109,23 @@ export function HomePage() {
                   onSearchChange={changeSearch}
                   onSearch={(val) => changeSearch(val)}
                 />
+                <div className={classes.modalActions}>
+                  <Button
+                    variant="primary"
+                    onClick={() => setOpenFormType('uncontrolled')}
+                    disabled={isLoading}
+                  >
+                    Open Uncontrolled Form
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setOpenFormType('react-hook-form')}
+                    disabled={isLoading}
+                  >
+                    Open React Hook Form
+                  </Button>
+                </div>
+                <SubmissionCardsList />
                 <div
                   style={{
                     display: 'flex',
@@ -106,6 +147,22 @@ export function HomePage() {
                   isLoading={isLoading}
                   error={error}
                 />
+                <Modal
+                  open={Boolean(openFormType)}
+                  title={
+                    openFormType === 'react-hook-form'
+                      ? 'React Hook Form'
+                      : 'Uncontrolled Form'
+                  }
+                  onClose={closeModal}
+                >
+                  {openFormType && (
+                    <ModalForms
+                      type={openFormType}
+                      onSubmit={handleFormSubmit}
+                    />
+                  )}
+                </Modal>
                 {!isLoading && !error && totalPages > 1 && (
                   <Pagination
                     currentPage={currentPage}

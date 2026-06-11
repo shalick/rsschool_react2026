@@ -1,7 +1,9 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { HomePage } from './HomePage';
 import { useCountriesStore } from '../store/useCountriesStore';
+import { useSubmissionStore } from '../store/useSubmissionStore';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import type { Country } from '../shared/types';
 import { useParams, useLocation } from 'react-router-dom';
@@ -104,7 +106,7 @@ vi.mock('../components/Pagination/Pagination', () => ({
 }));
 
 vi.mock('../components/ErrorBoundary/ErrorBoundary', () => ({
-  ErrorBoundary: ({ children }: { children: React.ReactNode }) => (
+  ErrorBoundary: ({ children }: { children: ReactNode }) => (
     <div data-testid="error-boundary">{children}</div>
   ),
 }));
@@ -112,6 +114,38 @@ vi.mock('../components/ErrorBoundary/ErrorBoundary', () => ({
 vi.mock('../components/ErrorSimulator/ErrorSimulator', () => ({
   ErrorSimulator: () => (
     <div data-testid="error-simulator">Error Simulator</div>
+  ),
+}));
+
+vi.mock('../components/Modal/Modal', () => ({
+  Modal: ({ open, children }: { open: boolean; children: ReactNode }) =>
+    open ? <div data-testid="mock-modal">{children}</div> : null,
+}));
+
+vi.mock('../components/Modal/ModalForms', () => ({
+  ModalForms: ({
+    type,
+    onSubmit,
+  }: {
+    type: 'uncontrolled' | 'react-hook-form';
+    onSubmit: (values: {
+      name: string;
+      email: string;
+      message: string;
+    }) => void;
+  }) => (
+    <button
+      data-testid={`submit-${type}`}
+      onClick={() =>
+        onSubmit({
+          name: `${type} name`,
+          email: `${type}@example.com`,
+          message: `Submitted via ${type}`,
+        })
+      }
+    >
+      Submit {type}
+    </button>
   ),
 }));
 
@@ -149,6 +183,7 @@ describe('HomePage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    useSubmissionStore.setState({ submissions: [] });
     mockUseParams.mockReturnValue({});
 
     mockUseLocation.mockReturnValue({
@@ -252,6 +287,34 @@ describe('HomePage', () => {
     const refreshButton = screen.getByRole('button', { name: /Refreshing/i });
     expect(refreshButton).toBeInTheDocument();
     expect(refreshButton.textContent).toContain('Refreshing...');
+  });
+
+  it('stores uncontrolled form submission and shows it on the page', async () => {
+    renderHomePage();
+
+    fireEvent.click(screen.getByRole('button', { name: /Open Uncontrolled Form/i }));
+    fireEvent.click(screen.getByTestId('submit-uncontrolled'));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Submission History/i)).toBeInTheDocument();
+      expect(screen.getByText(/^uncontrolled$/i)).toBeInTheDocument();
+      expect(screen.getByText(/Submitted via uncontrolled/i)).toBeInTheDocument();
+      expect(screen.getByText(/uncontrolled@example.com/i)).toBeInTheDocument();
+    });
+  });
+
+  it('stores react-hook-form submission and shows it on the page', async () => {
+    renderHomePage();
+
+    fireEvent.click(screen.getByRole('button', { name: /Open React Hook Form/i }));
+    fireEvent.click(screen.getByTestId('submit-react-hook-form'));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Submission History/i)).toBeInTheDocument();
+      expect(screen.getByText(/^react-hook-form$/i)).toBeInTheDocument();
+      expect(screen.getByText(/Submitted via react-hook-form/i)).toBeInTheDocument();
+      expect(screen.getByText(/react-hook-form@example.com/i)).toBeInTheDocument();
+    });
   });
 
   it('renders filtered countries when search param is in the URL', () => {

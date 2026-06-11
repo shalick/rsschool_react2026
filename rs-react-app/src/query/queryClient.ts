@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 
-const parseCacheTtlMs = (): number => {
+export const parseCacheTtlMs = (): number => {
   const rawValue = import.meta.env.VITE_QUERY_CACHE_TTL_MS;
   const parsed = Number(rawValue);
 
