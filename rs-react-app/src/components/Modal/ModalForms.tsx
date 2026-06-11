@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState } from 'react';
 import { type SubmitHandler, useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -122,14 +122,13 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const password = watch('password');
-  const passwordStrength = useMemo(() => checkPasswordStrength(password), [password]);
+  const passwordStrength = checkPasswordStrength(password);
 
-  const filteredCountries = useMemo(() => {
-    if (!uncontrolledCountryFilter) return countries;
-    return countries.filter((c) =>
-      c.name.common.toLowerCase().includes(uncontrolledCountryFilter.toLowerCase())
-    );
-  }, [uncontrolledCountryFilter, countries]);
+  const filteredCountries = uncontrolledCountryFilter
+    ? countries.filter((c) =>
+        c.name.common.toLowerCase().includes(uncontrolledCountryFilter.toLowerCase())
+      )
+    : countries;
 
   const handleUncontrolledImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target as HTMLInputElement & { dataset: { base64?: string } };
@@ -354,19 +353,20 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
 
         <label className={styles.field} htmlFor="country">
           <span className={styles.label}>Country</span>
-          <select
+          <input
             id="country"
             className={styles.input}
+            list="country-options"
             {...register('country')}
             aria-invalid={errors.country ? 'true' : 'false'}
-          >
-            <option value="">-- Select a country --</option>
+            placeholder="Start typing a country..."
+            autoComplete="off"
+          />
+          <datalist id="country-options">
             {countries.map((country) => (
-              <option key={country.cca3} value={country.name.common}>
-                {country.name.common}
-              </option>
+              <option key={country.cca3} value={country.name.common} />
             ))}
-          </select>
+          </datalist>
           {renderError(errors.country?.message)}
         </label>
 
@@ -504,7 +504,7 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
           id="country"
           className={styles.input}
           type="text"
-          name="countrySearch"
+          name="country"
           placeholder="Search country..."
           value={uncontrolledCountryFilter}
           onChange={(e) => {
@@ -513,6 +513,7 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
             setShowUncontrolledCountries(true);
           }}
           onFocus={() => setShowUncontrolledCountries(true)}
+          autoComplete="off"
         />
         {showUncontrolledCountries && filteredCountries.length > 0 && (
           <div className={styles.dropdown}>
@@ -531,11 +532,6 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
             ))}
           </div>
         )}
-        <input
-          type="hidden"
-          name="country"
-          value={selectedUncontrolledCountry}
-        />
       </label>
 
       <label className={styles.field} htmlFor="message">

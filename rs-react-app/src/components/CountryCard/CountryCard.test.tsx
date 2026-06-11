@@ -104,7 +104,7 @@ describe('CountryCard', () => {
     renderWithRouter(<CountryCard {...countryLargePop} />);
     expect(
       screen.getByText((content) =>
-        content.replace(/\s/g, '').includes('1234567890')
+        content.replace(/\D/g, '').includes('1234567890')
       )
     ).toBeInTheDocument();
   });
