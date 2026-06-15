@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Outlet, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useCountriesStore } from '../store/useCountriesStore';
 import { useSubmissionStore, type Gender } from '../store/useSubmissionStore';
@@ -35,48 +35,53 @@ export function HomePage() {
     }
   }, [fetchCountries, searchCountries, searchStr]);
 
-  const totalPages = Math.ceil(countries.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedCountries = countries.slice(
-    startIndex,
-    startIndex + itemsPerPage
+  // Memoized computations for pagination
+  const totalPages = useMemo(
+    () => Math.ceil(countries.length / itemsPerPage),
+    [countries.length, itemsPerPage]
   );
 
-  const changeSearch = (value: string) => {
+  const paginatedCountries = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return countries.slice(startIndex, startIndex + itemsPerPage);
+  }, [countries, currentPage, itemsPerPage]);
+
+  // Memoized callbacks for event handlers
+  const changeSearch = useCallback((value: string) => {
     setSearchStr(value);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     setCurrentPage(1);
     refreshCountries();
-  };
+  }, [refreshCountries]);
 
-  const setPage = (page: number) => {
+  const setPage = useCallback((page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
   const { countryCode } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleMainPanelClick = (e: React.MouseEvent) => {
+  const handleMainPanelClick = useCallback((e: React.MouseEvent) => {
     if (
       countryCode &&
       (e.target as HTMLElement).closest(`.${classes.leftSection}`)
     ) {
       navigate({ pathname: '/', search: location.search });
     }
-  };
+  }, [countryCode, navigate, location.search]);
 
   const [simulateError, setSimulateError] = useState(false);
   const [openFormType, setOpenFormType] = useState<'uncontrolled' | 'react-hook-form' | null>(null);
   const addSubmission = useSubmissionStore((state) => state.addSubmission);
 
-  const closeModal = () => setOpenFormType(null);
+  const closeModal = useCallback(() => setOpenFormType(null), []);
 
-  const handleFormSubmit = (values: {
+  const handleFormSubmit = useCallback((values: {
     name: string;
     age: number;
     email: string;
@@ -90,7 +95,7 @@ export function HomePage() {
   }) => {
     addSubmission({ type: openFormType ?? 'uncontrolled', ...values });
     closeModal();
-  };
+  }, [openFormType, addSubmission, closeModal]);
 
   return (
     <>

@@ -1,4 +1,6 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCallback, useMemo } from 'react';
 import { useSelectionStore } from '../../store/useSelectionStore';
 import { queryClient } from '../../query/queryClient';
 import { fetchCountryByCode } from '../../api/countriesApi';
@@ -7,7 +9,7 @@ import type { Country } from '../../shared/types';
 
 type CountryCardProps = Country & { currentSearch?: string };
 
-export const CountryCard = ({
+function CountryCardComponent({
   cca3,
   name,
   flags,
@@ -15,28 +17,28 @@ export const CountryCard = ({
   region,
   population,
   currentSearch = '',
-}: CountryCardProps) => {
+}: CountryCardProps) {
   const navigate = useNavigate();
   const { selectedIds, toggleSelection } = useSelectionStore();
-  const isSelected = selectedIds.has(cca3);
-  const countryCode = cca3.toLowerCase();
+  const isSelected = useMemo(() => selectedIds.has(cca3), [selectedIds, cca3]);
+  const countryCode = useMemo(() => cca3.toLowerCase(), [cca3]);
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCheckboxChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     toggleSelection(cca3);
-  };
+  }, [cca3, toggleSelection]);
 
-  const prefetchCountryDetails = () => {
+  const prefetchCountryDetails = useCallback(() => {
     queryClient.prefetchQuery({
       queryKey: ['country', countryCode],
       queryFn: () => fetchCountryByCode(countryCode),
     });
-  };
+  }, [countryCode]);
 
-  const handleCardClick = (e: React.MouseEvent) => {
+  const handleCardClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     navigate(`/${countryCode}${currentSearch}`);
-  };
+  }, [navigate, countryCode, currentSearch]);
 
   return (
     <li
@@ -75,4 +77,6 @@ export const CountryCard = ({
       </div>
     </li>
   );
-};
+}
+
+export const CountryCard = React.memo(CountryCardComponent);

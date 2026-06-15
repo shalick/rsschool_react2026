@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react';
 import classes from './Pagination.module.css';
 
 interface PaginationProps {
@@ -6,14 +7,17 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
 }
 
-export function Pagination({
+function PaginationComponent({
   currentPage,
   totalPages,
   onPageChange,
 }: PaginationProps) {
   if (totalPages <= 1) return null;
 
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+  const pageNumbers = useMemo(
+    () => Array.from({ length: totalPages }, (_, i) => i + 1),
+    [totalPages]
+  );
 
   return (
     <nav className={classes.paginationContainer}>
@@ -45,3 +49,5 @@ export function Pagination({
     </nav>
   );
 }
+
+export const Pagination = React.memo(PaginationComponent);
