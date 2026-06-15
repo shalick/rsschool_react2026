@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { CountryCard } from '../CountryCard/CountryCard';
 import { useCountriesStore } from '../../store/useCountriesStore';
@@ -21,23 +21,19 @@ function CardsListComponent({
   const location = useLocation();
   const { refreshCountries } = useCountriesStore();
 
+  const handleRetry = useCallback(() => refreshCountries(), [refreshCountries]);
+
   if (isLoading) return <Loader />;
   if (error) {
     return (
       <div className={classes.error}>
         <p>⚠️ {error}</p>
-        <Button variant="secondary" onClick={() => refreshCountries()}>
+        <Button variant="secondary" onClick={handleRetry}>
           Retry
         </Button>
       </div>
     );
   }
-
-  // Note on virtualization: The current pagination approach (12 items/page)
-  // means virtualization is less critical. However, virtualization is implemented
-  // through react-window library which automatically renders only visible items.
-  // This provides performance benefits for large lists and is optimal for scenarios
-  // where all items need to be displayed without pagination.
 
   return (
     <ul className={classes.cardsContainer}>
@@ -52,6 +48,5 @@ function CardsListComponent({
   );
 }
 
-// Wrap with React.memo to prevent unnecessary re-renders
-// This prevents CardsList from re-rendering when parent props haven't changed
+// React.memo prevents re-renders when parent state changes but props haven't changed
 export const CardsList = React.memo(CardsListComponent);

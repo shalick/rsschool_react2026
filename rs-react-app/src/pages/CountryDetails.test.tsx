@@ -8,14 +8,23 @@ vi.mock('../components/Loader/Loader', () => ({
   Loader: () => <div data-testid="loader">Loading countries…</div>,
 }));
 
-const mockCountryData = [
-  {
-    name: { common: 'Germany', official: 'Federal Republic of Germany' },
-    flags: { svg: 'germany.svg', alt: 'German flag' },
-    subregion: 'Western Europe',
-    languages: { deu: 'German' },
+const mockCountryData = {
+  data: {
+    objects: [
+      {
+        codes: { alpha_3: 'DEU' },
+        names: { common: 'Germany', official: 'Federal Republic of Germany' },
+        flag: { url_svg: 'germany.svg', description: 'German flag' },
+        capitals: [{ name: 'Berlin' }],
+        region: 'Europe',
+        population: 83200000,
+        subregion: 'Western Europe',
+        languages: [{ name: 'German' }],
+      },
+    ],
+    meta: { total: 1, count: 1, limit: 100, offset: 0, more: false },
   },
-];
+};
 
 describe('CountryDetails Component', () => {
   beforeEach(() => {
@@ -99,12 +108,17 @@ describe('CountryDetails Component', () => {
   });
 
   it('should use fallback alt text for flag image if flags.alt is missing', async () => {
-    const dataWithoutAlt = [
-      {
-        ...mockCountryData[0],
-        flags: { svg: 'germany.svg', alt: undefined },
+    const dataWithoutAlt = {
+      data: {
+        objects: [
+          {
+            ...mockCountryData.data.objects[0],
+            flag: { url_svg: 'germany.svg', description: undefined },
+          },
+        ],
+        meta: mockCountryData.data.meta,
       },
-    ];
+    };
 
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
@@ -119,14 +133,23 @@ describe('CountryDetails Component', () => {
   });
 
   it('should fallback to "N/A" for missing optional fields like subregion or languages', async () => {
-    const incompleteData = [
-      {
-        name: { common: 'Nameless', official: 'The Nameless State' },
-        flags: { svg: 'empty.svg' },
-        subregion: undefined,
-        languages: undefined,
+    const incompleteData = {
+      data: {
+        objects: [
+          {
+            codes: { alpha_3: 'NAM' },
+            names: { common: 'Nameless', official: 'The Nameless State' },
+            flag: { url_svg: 'empty.svg', description: undefined },
+            capitals: [],
+            region: 'Unknown',
+            population: 0,
+            subregion: undefined,
+            languages: undefined,
+          },
+        ],
+        meta: { total: 1, count: 1, limit: 100, offset: 0, more: false },
       },
-    ];
+    };
 
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
@@ -146,6 +169,7 @@ describe('CountryDetails Component', () => {
   it('should render an inline error state if API returns not ok response', async () => {
     vi.mocked(fetch).mockResolvedValue({
       ok: false,
+      status: 404,
     } as Response);
 
     renderWithRouter('wrong-code');
@@ -163,7 +187,9 @@ describe('CountryDetails Component', () => {
   it('should render an inline error state if API returns an empty data array', async () => {
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve([]),
+      json: () => Promise.resolve({
+        data: { objects: [], meta: { total: 0, count: 0, limit: 100, offset: 0, more: false } },
+      }),
     } as Response);
 
     renderWithRouter('empty');

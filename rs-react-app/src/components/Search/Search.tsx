@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import classes from './Search.module.css';
 
 interface SearchProps {
@@ -7,18 +7,18 @@ interface SearchProps {
   onSearch: (trimmedValue: string) => void;
 }
 
-export function Search({ searchStr, onSearchChange, onSearch }: SearchProps) {
+function SearchComponent({ searchStr, onSearchChange, onSearch }: SearchProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     onSearchChange(event.target.value);
-  };
+  }, [onSearchChange]);
 
-  const handleButtonClick = () => {
+  const handleButtonClick = useCallback(() => {
     const trimmed = searchStr.trim();
     onSearch(trimmed);
     inputRef.current?.focus();
-  };
+  }, [searchStr, onSearch]);
 
   return (
     <div className={classes.searchBox}>
@@ -46,3 +46,5 @@ export function Search({ searchStr, onSearchChange, onSearch }: SearchProps) {
     </div>
   );
 }
+
+export const Search = React.memo(SearchComponent);

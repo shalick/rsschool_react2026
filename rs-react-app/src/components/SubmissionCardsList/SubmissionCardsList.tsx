@@ -1,7 +1,8 @@
+import React from 'react';
 import { useSubmissionStore } from '../../store/useSubmissionStore';
 import classes from './SubmissionCardsList.module.css';
 
-export function SubmissionCardsList() {
+function SubmissionCardsListComponent() {
   const submissions = useSubmissionStore((state) => state.submissions);
 
   if (submissions.length === 0) {
@@ -66,3 +67,5 @@ export function SubmissionCardsList() {
     </section>
   );
 }
+
+export const SubmissionCardsList = React.memo(SubmissionCardsListComponent);

@@ -9,7 +9,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: Size;
 }
 
-export function Button({
+function ButtonComponent({
   children,
   variant = 'primary',
   size = 'md',
@@ -34,4 +34,5 @@ export function Button({
   );
 }
 
+export const Button = React.memo(ButtonComponent);
 export default Button;

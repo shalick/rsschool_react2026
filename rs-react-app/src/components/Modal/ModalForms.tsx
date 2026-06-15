@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo, useCallback } from 'react';
 import { type SubmitHandler, useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -116,21 +116,25 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
     },
   });
 
-  const renderError = (message?: string) => (
+  const renderError = useCallback((message?: string) => (
     <span className={styles.error}>{message ?? '\u00A0'}</span>
-  );
+  ), []);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const password = watch('password');
   const passwordStrength = checkPasswordStrength(password);
 
-  const filteredCountries = uncontrolledCountryFilter
-    ? countries.filter((c) =>
-        c.name.common.toLowerCase().includes(uncontrolledCountryFilter.toLowerCase())
-      )
-    : countries;
+  const filteredCountries = useMemo(
+    () =>
+      uncontrolledCountryFilter
+        ? countries.filter((c) =>
+            c.name.common.toLowerCase().includes(uncontrolledCountryFilter.toLowerCase())
+          )
+        : countries,
+    [countries, uncontrolledCountryFilter]
+  );
 
-  const handleUncontrolledImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUncontrolledImageChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target as HTMLInputElement & { dataset: { base64?: string } };
     const file = input.files?.[0];
     if (!file) return;
@@ -144,9 +148,9 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
     const base64 = await readFileAsDataURL(file);
     input.dataset.base64 = base64;
     setUncontrolledImageError('');
-  };
+  }, []);
 
-  const handleRhfImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRhfImageChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -159,13 +163,13 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
     const base64 = await readFileAsDataURL(file);
     setRhfImageBase64(base64);
     setRhfImageError('');
-  };
+  }, []);
 
-  const handleUncontrolledPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUncontrolledPasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setUncontrolledPasswordStrength(checkPasswordStrength(e.target.value));
-  };
+  }, []);
 
-  const handleUncontrolledSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleUncontrolledSubmit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
 
@@ -201,16 +205,16 @@ export function ModalForms({ type, onSubmit }: ModalFormsProps) {
     setSelectedUncontrolledCountry('');
     setShowUncontrolledCountries(false);
     formRef.current?.querySelector<HTMLInputElement>('input[name="name"]')?.focus();
-  };
+  }, [selectedUncontrolledCountry, uncontrolledCountryFilter, onSubmit]);
 
-  const handleHookFormSubmit: SubmitHandler<FormSchemaValues> = (values) => {
+  const handleHookFormSubmit: SubmitHandler<FormSchemaValues> = useCallback((values) => {
     onSubmit({
       ...values,
       image: rhfImageBase64,
     } as FormValues);
     reset();
     setRhfImageBase64('');
-  };
+  }, [onSubmit, rhfImageBase64, reset]);
 
   if (type === 'react-hook-form') {
     return (

@@ -1,13 +1,14 @@
+import React, { useCallback } from 'react';
 import { useSelectionStore } from '../../store/useSelectionStore';
 import { useCountriesStore } from '../../store/useCountriesStore';
 import classes from './Flyout.module.css';
 
-export const Flyout = () => {
+function FlyoutComponent() {
   const { selectedIds, clearSelections } = useSelectionStore();
   const { countries } = useCountriesStore();
   const selectedCount = selectedIds.size;
 
-  const handleDownload = () => {
+  const handleDownload = useCallback(() => {
     if (selectedCount === 0) return;
 
     const selectedCountries = countries.filter((c) => selectedIds.has(c.cca3));
@@ -60,7 +61,7 @@ export const Flyout = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  };
+  }, [selectedCount, selectedIds, countries]);
 
   if (selectedCount === 0) return null;
 
@@ -81,4 +82,6 @@ export const Flyout = () => {
       </div>
     </div>
   );
-};
+}
+
+export const Flyout = React.memo(FlyoutComponent);

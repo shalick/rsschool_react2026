@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useCallback } from 'react';
 import { queryClient } from '../query/queryClient';
 import { Loader } from '../components/Loader/Loader';
 import { fetchCountryByCode } from '../api/countriesApi';
@@ -29,16 +30,16 @@ export function CountryDetails() {
   const { isLoading, isError, isFetching } = queryResult;
   const error = queryResult.error;
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     navigate({ pathname: '/', search: window.location.search });
-  };
+  }, [navigate]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({
       queryKey: ['country', normalizedCountryCode],
     });
     await queryResult.refetch();
-  };
+  }, [normalizedCountryCode, queryResult]);
 
   if (isLoading)
     return (
