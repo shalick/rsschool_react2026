@@ -39,7 +39,7 @@ describe('countriesApi', () => {
       const result = await fetchAllCountries();
       expect(result).toEqual(mockCountries);
       expect(globalThis.fetch).toHaveBeenCalledWith(
-        'https://restcountries.com/v3.1/all?fields=name,flags,capital,region,population,cca3'
+        '/api/v3.1/all?fields=name,flags,capital,region,population,cca3'
       );
     });
 
@@ -119,7 +119,7 @@ describe('countriesApi', () => {
       const result = await fetchCountriesByName('Germany');
       expect(result).toEqual(mockCountries);
       expect(globalThis.fetch).toHaveBeenCalledWith(
-        'https://restcountries.com/v3.1/name/Germany?fields=name,flags,capital,region,population,cca3'
+        '/api/v3.1/name/Germany?fields=name,flags,capital,region,population,cca3'
       );
     });
 
@@ -180,7 +180,7 @@ describe('countriesApi', () => {
       const result = await fetchCountryByCode('mex');
       expect(result).toEqual(mockCountryData);
       expect(globalThis.fetch).toHaveBeenCalledWith(
-        'https://restcountries.com/v3.1/alpha/mex?fields=name,flags,subregion,languages,cca3'
+        '/api/v3.1/alpha/mex?fields=name,flags,subregion,languages,cca3'
       );
     });
 
