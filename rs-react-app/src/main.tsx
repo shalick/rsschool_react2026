@@ -8,6 +8,7 @@ import { HomePage } from './pages/HomePage';
 import { CountryDetails } from './pages/CountryDetails';
 import { AboutPage } from './pages/AboutPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { RouteErrorPage } from './pages/RouteErrorPage';
 import './index.css';
 import { ThemeProvider } from './context/ThemeContext';
 import { queryClient } from './query/queryClient';
@@ -16,10 +17,10 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
-    errorElement: <NotFoundPage />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
-        path: '/',
+        path: '',
         element: <HomePage />,
         children: [
           {

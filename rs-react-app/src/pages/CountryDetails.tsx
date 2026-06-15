@@ -10,7 +10,7 @@ interface ICountryDetail {
   name: { common: string; official: string };
   flags: { svg: string; alt?: string };
   subregion?: string;
-  languages?: Record<string, string>;
+  languages?: string[];
 }
 
 export function CountryDetails() {
@@ -88,8 +88,8 @@ export function CountryDetails() {
       </p>
       <p>
         <strong>Languages:</strong>{' '}
-        {country.languages
-          ? Object.values(country.languages).join(', ')
+        {country.languages && country.languages.length > 0
+          ? country.languages.join(', ')
           : 'N/A'}
       </p>
     </div>

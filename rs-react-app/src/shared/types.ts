@@ -12,5 +12,5 @@ export type CountryDetail = {
   name: { common: string; official?: string };
   flags: { svg: string; alt?: string };
   subregion?: string;
-  languages?: Record<string, string>;
+  languages?: string[];
 };

@@ -1,14 +1,26 @@
 import { defineConfig } from 'vitest/config';
+import { loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+
+  return {
   plugins: [react()],
   server: {
     proxy: {
       '/api': {
-        target: 'https://restcountries.com',
+        target: 'https://api.restcountries.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            const key = env.VITE_API_KEY;
+            if (key) {
+              proxyReq.setHeader('Authorization', `Bearer ${key}`);
+            }
+          });
+        },
       },
     },
   },
@@ -37,4 +49,5 @@ export default defineConfig({
       },
     },
   },
+  };
 });
