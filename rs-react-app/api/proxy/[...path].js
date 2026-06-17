@@ -12,9 +12,9 @@ export default async function handler(req, res) {
   }
   const upstreamUrl = `https://api.restcountries.com${upstreamPath}`;
 
-  const apiKey = process.env.VITE_API_KEY;
+  const apiKey = process.env.VITE_API_KEY || process.env.API_KEY || process.env.RESTCOUNTRIES_API_KEY;
   if (!apiKey) {
-    res.status(500).json({ error: 'API key not configured on server.' });
+    res.status(500).json({ error: 'API key not configured on server. Set VITE_API_KEY, API_KEY or RESTCOUNTRIES_API_KEY.' });
     return;
   }
 
