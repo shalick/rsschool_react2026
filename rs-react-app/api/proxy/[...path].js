@@ -3,7 +3,13 @@
  * and injects the Authorization header so the key is never exposed to the client.
  */
 export default async function handler(req, res) {
-  const upstreamPath = req.url || '/';
+  let upstreamPath = req.url || '/';
+  if (upstreamPath.startsWith('/api/proxy')) {
+    upstreamPath = upstreamPath.replace('/api/proxy', '');
+  }
+  if (!upstreamPath.startsWith('/')) {
+    upstreamPath = `/${upstreamPath}`;
+  }
   const upstreamUrl = `https://api.restcountries.com${upstreamPath}`;
 
   const apiKey = process.env.VITE_API_KEY;
