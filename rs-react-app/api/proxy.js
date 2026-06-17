@@ -5,8 +5,16 @@
  * Route: /api/:path*  (configured in vercel.json)
  */
 export default async function handler(req, res) {
-  // Strip the leading /api prefix to get the upstream path
-  const upstreamPath = req.url.replace(/^\/api/, '');
+  // Strip the internal API prefix to get the upstream path.
+  // Vercel rewrites /api/:path* to /api/proxy/:path* while local dev may hit /api directly.
+  let upstreamPath = req.url;
+  if (upstreamPath.startsWith('/api/proxy')) {
+    upstreamPath = upstreamPath.replace('/api/proxy', '');
+  } else if (upstreamPath.startsWith('/api')) {
+    upstreamPath = upstreamPath.replace('/api', '');
+  }
+
+  if (!upstreamPath) upstreamPath = '/';
   const upstreamUrl = `https://api.restcountries.com${upstreamPath}`;
 
   const apiKey = process.env.VITE_API_KEY;
