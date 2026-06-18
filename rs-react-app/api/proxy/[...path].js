@@ -4,12 +4,21 @@
  */
 export default async function handler(req, res) {
   let upstreamPath = req.url || '/';
+
   if (upstreamPath.startsWith('/api/proxy')) {
-    upstreamPath = upstreamPath.replace('/api/proxy', '');
+    upstreamPath = upstreamPath.slice('/api/proxy'.length);
+  } else if (upstreamPath.startsWith('/api')) {
+    upstreamPath = upstreamPath.slice('/api'.length);
   }
+
+  if (upstreamPath.startsWith('/countries')) {
+    upstreamPath = upstreamPath.slice('/countries'.length);
+  }
+
   if (!upstreamPath.startsWith('/')) {
     upstreamPath = `/${upstreamPath}`;
   }
+
   const upstreamUrl = `https://api.restcountries.com${upstreamPath}`;
 
   const apiKey = process.env.VITE_API_KEY || process.env.API_KEY || process.env.RESTCOUNTRIES_API_KEY;

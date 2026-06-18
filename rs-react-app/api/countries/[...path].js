@@ -5,9 +5,14 @@
 export default async function handler(req, res) {
   let upstreamPath = req.url || '/';
 
-  // If Vercel passes the full API route, strip the internal prefix.
-  if (upstreamPath.startsWith('/api/countries')) {
-    upstreamPath = upstreamPath.replace('/api/countries', '');
+  if (upstreamPath.startsWith('/api/proxy')) {
+    upstreamPath = upstreamPath.slice('/api/proxy'.length);
+  } else if (upstreamPath.startsWith('/api')) {
+    upstreamPath = upstreamPath.slice('/api'.length);
+  }
+
+  if (upstreamPath.startsWith('/countries')) {
+    upstreamPath = upstreamPath.slice('/countries'.length);
   }
 
   if (!upstreamPath.startsWith('/')) {
