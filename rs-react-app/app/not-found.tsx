@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
+import { Link } from '../src/i18n/navigation';
 
 export default async function NotFound() {
   const t = await getTranslations('notFound');

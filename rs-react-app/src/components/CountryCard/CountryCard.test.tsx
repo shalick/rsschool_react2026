@@ -3,10 +3,13 @@ import { CountryCard } from './CountryCard';
 import { useSelectionStore } from '../../store/useSelectionStore';
 import { queryClient } from '../../query/queryClient';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+// useRouter is from src/i18n/navigation — mocked globally in setup.ts
+// useParams/useSearchParams still come from next/navigation
 
 vi.mock('./CountryCard.module.css', () => ({
   default: {
     country: 'country',
+    flagWrapper: 'flagWrapper',
     flag: 'flag',
     countryInfo: 'countryInfo',
     details: 'details',
@@ -18,11 +21,9 @@ vi.mock('../../store/useSelectionStore', () => ({
   useSelectionStore: vi.fn(),
 }));
 
-const mockPush = vi.fn();
+// Only mock what still comes from next/navigation in CountryCard
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mockPush }),
   useSearchParams: () => new URLSearchParams(),
-  usePathname: () => '/',
   useParams: () => ({}),
 }));
 
@@ -44,13 +45,20 @@ describe('CountryCard', () => {
   const mockSelectedIds = new Set<string>();
   const mockUseSelectionStore = vi.mocked(useSelectionStore);
 
-  beforeEach(() => {
+  // Access the global mockPush exported from setup.ts
+  let mockPush: ReturnType<typeof vi.fn>;
+
+  beforeEach(async () => {
     vi.clearAllMocks();
     mockSelectedIds.clear();
     mockUseSelectionStore.mockReturnValue({
       selectedIds: mockSelectedIds,
       toggleSelection: mockToggleSelection,
     });
+    // Get the push mock from the global navigation mock
+    const nav = await import('../../i18n/navigation');
+    mockPush = (nav.useRouter as ReturnType<typeof vi.fn>)().push;
+    mockPush.mockClear();
   });
 
   it('renders country name, flag, population, region, and capital', () => {
@@ -80,21 +88,18 @@ describe('CountryCard', () => {
   });
 
   it('renders correctly when capital array is empty', () => {
-    const countryEmptyCapital = { ...mockCountry, capital: [] };
-    render(<CountryCard {...countryEmptyCapital} />);
+    render(<CountryCard {...mockCountry} capital={[]} />);
     expect(screen.queryByText('Berlin')).not.toBeInTheDocument();
     expect(screen.getByText(/Capital:/)).toBeInTheDocument();
   });
 
   it('renders "N/A" for capital when capital is undefined', () => {
-    const countryUndefinedCapital = { ...mockCountry, capital: undefined };
-    render(<CountryCard {...countryUndefinedCapital} />);
+    render(<CountryCard {...mockCountry} capital={undefined} />);
     expect(screen.getByText('N/A')).toBeInTheDocument();
   });
 
   it('formats large population correctly based on current locale', () => {
-    const countryLargePop = { ...mockCountry, population: 1234567890 };
-    render(<CountryCard {...countryLargePop} />);
+    render(<CountryCard {...mockCountry} population={1234567890} />);
     expect(
       screen.getByText((content) =>
         content.replace(/\s/g, '').includes('1234567890')
@@ -133,7 +138,6 @@ describe('CountryCard', () => {
     const prefetchSpy = vi.spyOn(queryClient, 'prefetchQuery');
     render(<CountryCard {...mockCountry} />);
     const card = screen.getByRole('listitem');
-
     fireEvent.mouseEnter(card);
     expect(prefetchSpy).toHaveBeenCalledWith(
       expect.objectContaining({

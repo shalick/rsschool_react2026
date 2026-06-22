@@ -2,18 +2,17 @@ import { render, screen } from '@testing-library/react';
 import { HomePage } from '../src/page-components/HomePage';
 import { useCountriesStore } from '../src/store/useCountriesStore';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+// useRouter is from src/i18n/navigation — mocked globally in setup.ts
 
 window.scrollTo = vi.fn();
 
-const mockPush = vi.fn();
 const mockParams: Record<string, string> = {};
 const mockSearchParams = new URLSearchParams();
 
+// Only useParams and useSearchParams still come from next/navigation in HomePage
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mockPush }),
   useParams: () => mockParams,
   useSearchParams: () => mockSearchParams,
-  usePathname: () => '/',
 }));
 
 vi.mock('../src/store/useCountriesStore', () => ({
@@ -42,60 +41,34 @@ vi.mock('../src/components/CountriesCardsList/CountriesCardsList', () => ({
     <div data-testid="cards-list">
       {isLoading && <span>Loading...</span>}
       {error && <span>Error: {error}</span>}
-      {!isLoading &&
-        !error &&
-        countries.map((c) => <div key={c.cca3}>{c.name.common}</div>)}
+      {!isLoading && !error && countries.map((c) => <div key={c.cca3}>{c.name.common}</div>)}
     </div>
   ),
 }));
 
 vi.mock('../src/components/Search/Search', () => ({
-  Search: ({
-    searchStr,
-    onSearchChange,
-  }: {
-    searchStr: string;
-    onSearchChange: (v: string) => void;
-  }) => (
+  Search: ({ searchStr, onSearchChange }: { searchStr: string; onSearchChange: (v: string) => void }) => (
     <div data-testid="search">
-      <input
-        data-testid="search-input"
-        value={searchStr}
-        onChange={(e) => onSearchChange(e.target.value)}
-      />
+      <input data-testid="search-input" value={searchStr} onChange={(e) => onSearchChange(e.target.value)} />
     </div>
   ),
 }));
 
 vi.mock('../src/components/Pagination/Pagination', () => ({
-  Pagination: ({
-    currentPage,
-    totalPages,
-    onPageChange,
-  }: {
-    currentPage: number;
-    totalPages: number;
-    onPageChange: (p: number) => void;
-  }) => (
+  Pagination: ({ currentPage, totalPages, onPageChange }: { currentPage: number; totalPages: number; onPageChange: (p: number) => void }) => (
     <div data-testid="pagination">
       <button onClick={() => onPageChange(currentPage + 1)}>Next</button>
-      <span>
-        Page {currentPage} of {totalPages}
-      </span>
+      <span>Page {currentPage} of {totalPages}</span>
     </div>
   ),
 }));
 
 vi.mock('../src/components/ErrorBoundary/ErrorBoundary', () => ({
-  ErrorBoundary: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="error-boundary">{children}</div>
-  ),
+  ErrorBoundary: ({ children }: { children: React.ReactNode }) => <div data-testid="error-boundary">{children}</div>,
 }));
 
 vi.mock('../src/components/ErrorSimulator/ErrorSimulator', () => ({
-  ErrorSimulator: () => (
-    <div data-testid="error-simulator">Error Simulator</div>
-  ),
+  ErrorSimulator: () => <div data-testid="error-simulator">Error Simulator</div>,
 }));
 
 vi.mock('../src/page-components/CountryDetails', () => ({
@@ -103,30 +76,9 @@ vi.mock('../src/page-components/CountryDetails', () => ({
 }));
 
 const mockCountries = [
-  {
-    cca3: 'DEU',
-    name: { common: 'Germany' },
-    flags: {},
-    capital: ['Berlin'],
-    region: 'Europe',
-    population: 83200000,
-  },
-  {
-    cca3: 'FRA',
-    name: { common: 'France' },
-    flags: {},
-    capital: ['Paris'],
-    region: 'Europe',
-    population: 67390000,
-  },
-  {
-    cca3: 'ESP',
-    name: { common: 'Spain' },
-    flags: {},
-    capital: ['Madrid'],
-    region: 'Europe',
-    population: 47351567,
-  },
+  { cca3: 'DEU', name: { common: 'Germany' }, flags: {}, capital: ['Berlin'], region: 'Europe', population: 83200000 },
+  { cca3: 'FRA', name: { common: 'France' }, flags: {}, capital: ['Paris'], region: 'Europe', population: 67390000 },
+  { cca3: 'ESP', name: { common: 'Spain' }, flags: {}, capital: ['Madrid'], region: 'Europe', population: 47351567 },
 ];
 
 describe('HomePage', () => {
@@ -158,12 +110,8 @@ describe('HomePage', () => {
 
   it('renders loading state when isLoading is true', () => {
     vi.mocked(useCountriesStore).mockReturnValue({
-      countries: [],
-      isLoading: true,
-      error: null,
-      fetchCountries: vi.fn(),
-      searchCountries: vi.fn(),
-      refreshCountries: vi.fn(),
+      countries: [], isLoading: true, error: null,
+      fetchCountries: vi.fn(), searchCountries: vi.fn(), refreshCountries: vi.fn(),
     });
     render(<HomePage />);
     expect(screen.getByText('Loading...')).toBeInTheDocument();
@@ -171,12 +119,8 @@ describe('HomePage', () => {
 
   it('renders error state when error is provided', () => {
     vi.mocked(useCountriesStore).mockReturnValue({
-      countries: [],
-      isLoading: false,
-      error: 'Network error',
-      fetchCountries: vi.fn(),
-      searchCountries: vi.fn(),
-      refreshCountries: vi.fn(),
+      countries: [], isLoading: false, error: 'Network error',
+      fetchCountries: vi.fn(), searchCountries: vi.fn(), refreshCountries: vi.fn(),
     });
     render(<HomePage />);
     expect(screen.getByText(/Network error/)).toBeInTheDocument();

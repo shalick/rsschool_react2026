@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
+import { useRouter } from '../i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useCountriesStore } from '../store/useCountriesStore';
 import { CardsList } from '../components/CountriesCardsList/CountriesCardsList';

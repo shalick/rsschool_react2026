@@ -1,13 +1,12 @@
 'use client';
 
-import Link from 'next/link';
+import { Link, usePathname } from '../i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { ThemeToggle } from '../components/ThemeToggle/ThemeToggle';
 import { LanguageSwitcher } from '../components/LanguageSwitcher/LanguageSwitcher';
 import { useCountriesStore } from '../store/useCountriesStore';
 import { useEffect } from 'react';
 import { Flyout } from '../components/Flyout/Flyout';
-import { usePathname } from 'next/navigation';
 import type { Locale } from '../i18n/config';
 import classes from './RootLayout.module.css';
 

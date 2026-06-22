@@ -1,23 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { NotFoundPage } from '../src/page-components/NotFoundPage';
-import { describe, expect, it, vi } from 'vitest';
-
-// Mock next/link so Link renders as a plain <a> in tests
-vi.mock('next/link', () => ({
-  default: ({
-    href,
-    style,
-    children,
-  }: {
-    href: string;
-    style?: React.CSSProperties;
-    children: React.ReactNode;
-  }) => (
-    <a href={href} style={style}>
-      {children}
-    </a>
-  ),
-}));
+import { describe, expect, it } from 'vitest';
+// Link is now from src/i18n/navigation — mocked globally in setup.ts
 
 describe('NotFoundPage Component', () => {
   it('should render the 404 header and error message text', () => {

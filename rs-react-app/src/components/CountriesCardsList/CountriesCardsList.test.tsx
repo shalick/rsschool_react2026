@@ -5,15 +5,13 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 vi.mock('../../store/useCountriesStore');
 
-// Mock next/navigation — useSearchParams is called inside CardsList
+// useSearchParams still comes from next/navigation inside CountriesCardsList
 vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
-  useRouter: () => ({ push: vi.fn() }),
-  usePathname: () => '/',
   useParams: () => ({}),
 }));
 
-// Mock CountryCard to avoid its own next/navigation dependency chain
+// Mock CountryCard to isolate from its own navigation dependency chain
 vi.mock('../CountryCard/CountryCard', () => ({
   CountryCard: ({ name }: { name: { common: string } }) => (
     <li role="listitem">{name.common}</li>
@@ -49,17 +47,13 @@ describe('CardsList', () => {
   });
 
   it('renders error message and retry button when error is provided', () => {
-    render(
-      <CardsList countries={[]} isLoading={false} error="Failed to fetch" />
-    );
+    render(<CardsList countries={[]} isLoading={false} error="Failed to fetch" />);
     expect(screen.getByText(/Failed to fetch/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
   });
 
   it('renders a list of CountryCard components for each country', () => {
-    render(
-      <CardsList countries={mockCountries} isLoading={false} error={null} />
-    );
+    render(<CardsList countries={mockCountries} isLoading={false} error={null} />);
     expect(screen.getByText('Mexico')).toBeInTheDocument();
   });
 
@@ -70,9 +64,7 @@ describe('CardsList', () => {
 
   it('handles missing optional fields on a country (e.g., capital)', () => {
     const incomplete = [{ ...mockCountries[0], capital: undefined }];
-    render(
-      <CardsList countries={incomplete} isLoading={false} error={null} />
-    );
+    render(<CardsList countries={incomplete} isLoading={false} error={null} />);
     expect(screen.getByText('Mexico')).toBeInTheDocument();
   });
 
@@ -86,7 +78,6 @@ describe('CardsList', () => {
       searchCountries: vi.fn(),
       refreshCountries: mockRefresh,
     });
-
     render(<CardsList countries={[]} isLoading={false} error="Error" />);
     fireEvent.click(screen.getByRole('button', { name: /retry/i }));
     expect(mockRefresh).toHaveBeenCalled();

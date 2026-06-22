@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '../../i18n/navigation';
 import { locales, LOCALE_COOKIE, type Locale } from '../../i18n/config';
 import classes from './LanguageSwitcher.module.css';
 

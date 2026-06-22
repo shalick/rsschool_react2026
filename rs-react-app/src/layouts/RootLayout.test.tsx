@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { RootLayout } from './RootLayout';
 import { describe, expect, it, vi } from 'vitest';
+// Link and usePathname are from src/i18n/navigation — mocked globally in setup.ts
+// But we need per-test pathname control, so we override the module mock here.
 
 vi.mock('./RootLayout.module.css', () => ({
   default: {
@@ -28,9 +30,14 @@ vi.mock('../components/Flyout/Flyout', () => ({
   Flyout: () => <div data-testid="flyout">Flyout</div>,
 }));
 
-// Mock next/link so Link renders as a plain <a> in tests
-vi.mock('next/link', () => ({
-  default: ({
+vi.mock('../components/LanguageSwitcher/LanguageSwitcher', () => ({
+  LanguageSwitcher: () => <div data-testid="language-switcher">Language</div>,
+}));
+
+// Override the global navigation mock to allow per-test pathname control
+const mockUsePathname = vi.fn(() => '/');
+vi.mock('../i18n/navigation', () => ({
+  Link: ({
     href,
     className,
     children,
@@ -43,12 +50,13 @@ vi.mock('next/link', () => ({
       {children}
     </a>
   ),
+  usePathname: () => mockUsePathname(),
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  redirect: vi.fn(),
 }));
 
-const mockUsePathname = vi.fn();
+// Also mock next/navigation for useParams/useSearchParams used in store/hooks
 vi.mock('next/navigation', () => ({
-  usePathname: () => mockUsePathname(),
-  useRouter: () => ({ push: vi.fn() }),
   useSearchParams: () => new URLSearchParams(),
   useParams: () => ({}),
 }));

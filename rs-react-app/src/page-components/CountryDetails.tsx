@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
+import { useRouter } from '../i18n/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { queryClient } from '../query/queryClient';
