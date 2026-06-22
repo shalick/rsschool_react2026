@@ -45,9 +45,10 @@ export function HomePage() {
     }
   }, [fetchCountries, searchCountries, searchStr]);
 
-  const totalPages = Math.ceil(countries.length / itemsPerPage);
+  const totalPages = Math.ceil((countries ?? []).length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedCountries = countries.slice(
+  const safeCountries = Array.isArray(countries) ? countries : [];
+  const paginatedCountries = safeCountries.slice(
     startIndex,
     startIndex + itemsPerPage
   );

@@ -14,7 +14,7 @@ export const Flyout = () => {
   const handleDownload = () => {
     if (selectedCount === 0) return;
 
-    const selectedCountries = countries.filter((c) => selectedIds.has(c.cca3));
+  const selectedCountries = (Array.isArray(countries) ? countries : []).filter((c) => selectedIds.has(c.cca3));
 
     const headers = [
       'Name', 'Official Name', 'Region', 'Subregion', 'Capital',
