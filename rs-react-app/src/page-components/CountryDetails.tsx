@@ -2,6 +2,7 @@
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { queryClient } from '../query/queryClient';
 import { Loader } from '../components/Loader/Loader';
 import { fetchCountryByCode } from '../api/countriesApi';
@@ -16,6 +17,7 @@ interface ICountryDetail {
 }
 
 export function CountryDetails() {
+  const t = useTranslations('details');
   const params = useParams() as { countryCode?: string };
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -35,14 +37,10 @@ export function CountryDetails() {
   const { isLoading, isError, isFetching } = queryResult;
   const error = queryResult.error;
 
-  const handleClose = () => {
-    router.push(`/${queryString}`);
-  };
+  const handleClose = () => router.push(`/${queryString}`);
 
   const handleRefresh = async () => {
-    await queryClient.invalidateQueries({
-      queryKey: ['country', normalizedCountryCode],
-    });
+    await queryClient.invalidateQueries({ queryKey: ['country', normalizedCountryCode] });
     await queryResult.refetch();
   };
 
@@ -56,14 +54,10 @@ export function CountryDetails() {
   if (isError && !isFetching)
     return (
       <div className={styles.errorContainer}>
-        <h2>Country details could not be loaded</h2>
-        <p>{error?.message ?? 'Please try again later.'}</p>
-        <Button
-          variant="primary"
-          onClick={handleClose}
-          className={styles.errorButton}
-        >
-          Return to country list
+        <h2>{t('notFound')}</h2>
+        <p>{error?.message ?? t('notFoundDesc')}</p>
+        <Button variant="primary" onClick={handleClose} className={styles.errorButton}>
+          {t('returnToList')}
         </Button>
       </div>
     );
@@ -72,15 +66,11 @@ export function CountryDetails() {
 
   return (
     <div className={styles.container}>
-      <Button
-        variant="secondary"
-        className={styles.refresh}
-        onClick={handleRefresh}
-      >
-        {isFetching ? '🔄 Refreshing...' : '🔄 Refresh'}
+      <Button variant="secondary" className={styles.refresh} onClick={handleRefresh}>
+        {isFetching ? `🔄 ${t('refreshing')}` : `🔄 ${t('refresh')}`}
       </Button>
       <Button variant="ghost" className={styles.close} onClick={handleClose}>
-        ✕ Close
+        {t('close')}
       </Button>
 
       <h2>{country.name.official}</h2>
@@ -90,13 +80,11 @@ export function CountryDetails() {
         className={styles.flag}
       />
       <p>
-        <strong>Subregion:</strong> {country.subregion || 'N/A'}
+        <strong>{t('subregion')}:</strong> {country.subregion || 'N/A'}
       </p>
       <p>
-        <strong>Languages:</strong>{' '}
-        {country.languages
-          ? Object.values(country.languages).join(', ')
-          : 'N/A'}
+        <strong>{t('languages')}:</strong>{' '}
+        {country.languages ? Object.values(country.languages).join(', ') : 'N/A'}
       </p>
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useSelectionStore } from '../../store/useSelectionStore';
 import { queryClient } from '../../query/queryClient';
 import { fetchCountryByCode } from '../../api/countriesApi';
@@ -19,6 +20,7 @@ export const CountryCard = ({
   currentSearch = '',
 }: CountryCardProps) => {
   const router = useRouter();
+  const t = useTranslations('countries');
   const { selectedIds, toggleSelection } = useSelectionStore();
   const isSelected = selectedIds.has(cca3);
   const countryCode = cca3.toLowerCase();
@@ -57,13 +59,13 @@ export const CountryCard = ({
         <h3>{name.common}</h3>
         <div className={classes.details}>
           <p>
-            <strong>Population:</strong> {population.toLocaleString()}
+            <strong>{t('population')}:</strong> {population.toLocaleString()}
           </p>
           <p>
-            <strong>Region:</strong> {region}
+            <strong>{t('region')}:</strong> {region}
           </p>
           <p>
-            <strong>Capital:</strong> {capital ? capital[0] : 'N/A'}
+            <strong>{t('capital')}:</strong> {capital ? capital[0] : 'N/A'}
           </p>
         </div>
       </div>

@@ -30,12 +30,10 @@ function mockFallback(path: string[], search: string): NextResponse {
   if (segment === 'name' && param) {
     const query = param.toLowerCase();
     const results = mockCountries.filter((c) =>
-      c.name.common.toLowerCase().includes(query)
+      c.name.common.toLowerCase().includes(query) ||
+      (c.name.official ?? '').toLowerCase().includes(query)
     );
-    if (results.length === 0) {
-      return NextResponse.json({ message: 'Not Found', status: 404 }, { status: 404 });
-    }
-    return NextResponse.json(results);
+    return NextResponse.json(results); // empty array = no results, consistent with API behaviour
   }
 
   // /alpha/:code
@@ -61,7 +59,16 @@ export async function GET(
 
   try {
     const upstream = await fetchWithTimeout(url);
+    // Fall back to mock on network errors OR upstream failures
+    if (!upstream.ok && upstream.status !== 404) {
+      throw new Error(`upstream ${upstream.status}`);
+    }
     const data = await upstream.json();
+    // restcountries returns 404 JSON for not-found — pass it through as empty array for /name
+    if (!upstream.ok) {
+      if (path[0] === 'name') return NextResponse.json([]);
+      return NextResponse.json(data, { status: upstream.status });
+    }
     return NextResponse.json(data, { status: upstream.status });
   } catch (err) {
     console.warn('[api/countries] upstream unreachable, using mock data:', (err as Error).message);

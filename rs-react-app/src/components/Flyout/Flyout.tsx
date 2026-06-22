@@ -1,8 +1,12 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { useSelectionStore } from '../../store/useSelectionStore';
 import { useCountriesStore } from '../../store/useCountriesStore';
 import classes from './Flyout.module.css';
 
 export const Flyout = () => {
+  const t = useTranslations('flyout');
   const { selectedIds, clearSelections } = useSelectionStore();
   const { countries } = useCountriesStore();
   const selectedCount = selectedIds.size;
@@ -13,15 +17,8 @@ export const Flyout = () => {
     const selectedCountries = countries.filter((c) => selectedIds.has(c.cca3));
 
     const headers = [
-      'Name',
-      'Official Name',
-      'Region',
-      'Subregion',
-      'Capital',
-      'Population',
-      'Flag URL (SVG)',
-      'Flag Alt Text',
-      'Details URL',
+      'Name', 'Official Name', 'Region', 'Subregion', 'Capital',
+      'Population', 'Flag URL (SVG)', 'Flag Alt Text', 'Details URL',
     ];
 
     const rows = selectedCountries.map((country) => [
@@ -49,9 +46,7 @@ export const Flyout = () => {
       ...rows.map((row) => row.map(escapeCSV).join(',')),
     ].join('\n');
 
-    const blob = new Blob(['\uFEFF' + csvContent], {
-      type: 'text/csv;charset=utf-8;',
-    });
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -68,14 +63,14 @@ export const Flyout = () => {
     <div className={classes.flyout}>
       <div className={classes.content}>
         <span className={classes.count}>
-          Selected: {selectedCount} country{selectedCount !== 1 ? 's' : ''}
+          {t('selected', { count: selectedCount })}
         </span>
         <div className={classes.buttons}>
           <button onClick={clearSelections} className={classes.unselectBtn}>
-            Unselect all
+            {t('unselectAll')}
           </button>
           <button onClick={handleDownload} className={classes.downloadBtn}>
-            Download
+            {t('download')}
           </button>
         </div>
       </div>

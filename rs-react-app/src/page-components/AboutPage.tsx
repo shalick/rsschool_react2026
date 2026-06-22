@@ -1,10 +1,15 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import styles from './AboutPage.module.css';
 
 export function AboutPage() {
+  const t = useTranslations('about');
+
   return (
     <div className={styles.container}>
-      <h1>About This Application</h1>
-      <p>Developer: [Alexander Shabanovich / shalick]</p>
+      <h1>{t('title')}</h1>
+      <p>{t('developer')}</p>
       <p>
         Built as part of the{' '}
         <a
@@ -13,7 +18,7 @@ export function AboutPage() {
           rel="noopener noreferrer"
           className={styles.link}
         >
-          RS School React Course
+          {t('courseLink')}
         </a>
       </p>
     </div>

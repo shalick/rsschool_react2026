@@ -96,7 +96,7 @@ describe('Flyout', () => {
     const countSpan = container.querySelector('.count');
     expect(countSpan).toBeInTheDocument();
     const normalizedText = countSpan?.textContent?.replace(/\s+/g, ' ').trim();
-    expect(normalizedText).toBe('Selected: 2 countrys');
+    expect(normalizedText).toBe('Selected: 2 countries');
   });
 
   it('calls clearSelections when "Unselect all" button is clicked', () => {

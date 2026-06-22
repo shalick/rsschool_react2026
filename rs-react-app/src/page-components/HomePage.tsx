@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCountriesStore } from '../store/useCountriesStore';
 import { CardsList } from '../components/CountriesCardsList/CountriesCardsList';
 import { Search } from '../components/Search/Search';
@@ -21,6 +22,9 @@ export function HomePage() {
     searchCountries,
     refreshCountries,
   } = useCountriesStore();
+
+  const t = useTranslations('countries');
+  const te = useTranslations('errors');
 
   const [searchStr, setSearchStr] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -106,7 +110,7 @@ export function HomePage() {
                     onClick={handleRefresh}
                     disabled={isLoading}
                   >
-                    {isLoading ? '🔄 Refreshing...' : '🔄 Refresh'}
+                    {isLoading ? `🔄 ${t('refreshing')}` : `🔄 ${t('refresh')}`}
                   </Button>
                 </div>
                 <CardsList
@@ -145,7 +149,7 @@ export function HomePage() {
         onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.03)')}
         onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
       >
-        {simulateError ? '🔄 Reset Error Simulation' : '⚠️ Test Error Boundary'}
+        {simulateError ? te('resetBoundary') : te('testBoundary')}
       </Button>
     </>
   );

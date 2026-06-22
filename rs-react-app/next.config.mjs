@@ -1,9 +1,12 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
 const nextConfig = {
   reactStrictMode: true,
   eslint: {
-    // ESLint is run separately via `npm run lint`; skip during next build
     ignoreDuringBuilds: true,
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);
