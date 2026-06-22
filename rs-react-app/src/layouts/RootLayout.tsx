@@ -25,8 +25,8 @@ export function RootLayout({ children, locale }: RootLayoutProps) {
     fetchCountries();
   }, [fetchCountries]);
 
-  const isHomeActive = pathname === '/';
   const isAboutActive = pathname === '/about';
+  const isHomeActive = !isAboutActive;
 
   return (
     <div className={classes.layout}>
