@@ -17,7 +17,7 @@ const getErrorMessage = (status: number): string => {
 
 export async function fetchAllCountries(): Promise<Country[]> {
   const url =
-    'https://restcountries.com/v3.1/all?fields=name,flags,capital,region,population,cca3';
+    '/api/countries/all?fields=name,flags,capital,region,population,cca3';
 
   let response: Response;
   try {
@@ -37,7 +37,7 @@ export async function fetchAllCountries(): Promise<Country[]> {
 }
 
 export async function fetchCountriesByName(name: string): Promise<Country[]> {
-  const url = `https://restcountries.com/v3.1/name/${encodeURIComponent(name)}?fields=name,flags,capital,region,population,cca3`;
+  const url = `/api/countries/name/${encodeURIComponent(name)}?fields=name,flags,capital,region,population,cca3`;
 
   let response: Response;
   try {
@@ -69,7 +69,7 @@ export interface ICountryDetail {
 export async function fetchCountryByCode(
   code: string
 ): Promise<ICountryDetail> {
-  const url = `https://restcountries.com/v3.1/alpha/${encodeURIComponent(code)}?fields=name,flags,subregion,languages,cca3`; // keep necessary fields for details
+  const url = `/api/countries/alpha/${encodeURIComponent(code)}?fields=name,flags,subregion,languages,cca3`;
 
   let response: Response;
   try {

@@ -1,11 +1,22 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CountryDetails } from '../src/page-components/CountryDetails';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('../src/components/Loader/Loader', () => ({
   Loader: () => <div data-testid="loader">Loading countries…</div>,
+}));
+
+// Mutable params/searchParams so individual tests can override them
+const mockParams: Record<string, string> = { countryCode: 'deu' };
+const mockPush = vi.fn();
+let mockSearchParamsStr = '';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush }),
+  useParams: () => mockParams,
+  useSearchParams: () => new URLSearchParams(mockSearchParamsStr),
+  usePathname: () => '/',
 }));
 
 const mockCountryData = [
@@ -17,43 +28,28 @@ const mockCountryData = [
   },
 ];
 
+const createQueryClient = () =>
+  new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+const renderDetails = (client = createQueryClient()) =>
+  render(
+    <QueryClientProvider client={client}>
+      <CountryDetails />
+    </QueryClientProvider>
+  );
+
 describe('CountryDetails Component', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn());
     vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockParams.countryCode = 'deu';
+    mockSearchParamsStr = '';
+    mockPush.mockClear();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
-
-  const createQueryClient = () =>
-    new QueryClient({
-      defaultOptions: {
-        queries: {
-          retry: false,
-        },
-      },
-    });
-
-  const renderWithRouter = (code = 'deu') => {
-    return render(
-      <QueryClientProvider client={createQueryClient()}>
-        <MemoryRouter initialEntries={[`/countries/${code}`]}>
-          <Routes>
-            <Route
-              path="/countries/:countryCode"
-              element={<CountryDetails />}
-            />
-            <Route
-              path="/page-not-found"
-              element={<div>404 Page Not Found</div>}
-            />
-          </Routes>
-        </MemoryRouter>
-      </QueryClientProvider>
-    );
-  };
 
   it('should display loading indicator while fetching country details', async () => {
     vi.mocked(fetch).mockReturnValue(
@@ -69,8 +65,7 @@ describe('CountryDetails Component', () => {
       )
     );
 
-    renderWithRouter();
-
+    renderDetails();
     expect(screen.getByTestId('loader')).toBeInTheDocument();
     await waitFor(() =>
       expect(screen.queryByTestId('loader')).not.toBeInTheDocument()
@@ -83,35 +78,31 @@ describe('CountryDetails Component', () => {
       json: () => Promise.resolve(mockCountryData),
     } as Response);
 
-    renderWithRouter();
+    renderDetails();
 
     await waitFor(() => {
       expect(
         screen.getByText('Federal Republic of Germany')
       ).toBeInTheDocument();
     });
-
     expect(screen.getByText('Western Europe')).toBeInTheDocument();
     expect(screen.getByText('German')).toBeInTheDocument();
-
-    const flagImg = screen.getByAltText('German flag');
-    expect(flagImg).toHaveAttribute('src', 'germany.svg');
+    expect(screen.getByAltText('German flag')).toHaveAttribute(
+      'src',
+      'germany.svg'
+    );
   });
 
   it('should use fallback alt text for flag image if flags.alt is missing', async () => {
     const dataWithoutAlt = [
-      {
-        ...mockCountryData[0],
-        flags: { svg: 'germany.svg', alt: undefined },
-      },
+      { ...mockCountryData[0], flags: { svg: 'germany.svg', alt: undefined } },
     ];
-
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(dataWithoutAlt),
     } as Response);
 
-    renderWithRouter();
+    renderDetails();
 
     await waitFor(() => {
       expect(screen.getByAltText('Flag of Germany')).toBeInTheDocument();
@@ -127,28 +118,25 @@ describe('CountryDetails Component', () => {
         languages: undefined,
       },
     ];
-
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(incompleteData),
     } as Response);
 
-    renderWithRouter('unknown');
+    mockParams.countryCode = 'unknown';
+    renderDetails();
 
     await waitFor(() => {
       expect(screen.getByText('The Nameless State')).toBeInTheDocument();
     });
-
-    const naElements = screen.getAllByText('N/A');
-    expect(naElements.length).toBe(2);
+    expect(screen.getAllByText('N/A')).toHaveLength(2);
   });
 
   it('should render an inline error state if API returns not ok response', async () => {
-    vi.mocked(fetch).mockResolvedValue({
-      ok: false,
-    } as Response);
+    vi.mocked(fetch).mockResolvedValue({ ok: false } as Response);
 
-    renderWithRouter('wrong-code');
+    mockParams.countryCode = 'wrong-code';
+    renderDetails();
 
     await waitFor(() => {
       expect(
@@ -166,7 +154,8 @@ describe('CountryDetails Component', () => {
       json: () => Promise.resolve([]),
     } as Response);
 
-    renderWithRouter('empty');
+    mockParams.countryCode = 'empty';
+    renderDetails();
 
     await waitFor(() => {
       expect(
@@ -181,7 +170,8 @@ describe('CountryDetails Component', () => {
       json: () => Promise.resolve(mockCountryData),
     } as Response);
 
-    renderWithRouter('MEX');
+    mockParams.countryCode = 'MEX';
+    renderDetails();
 
     await waitFor(() => {
       expect(
@@ -190,28 +180,14 @@ describe('CountryDetails Component', () => {
     });
   });
 
-  it('should navigate back to home screen when the close button is clicked', async () => {
+  it('should navigate back to home when the close button is clicked', async () => {
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(mockCountryData),
     } as Response);
 
-    render(
-      <QueryClientProvider client={createQueryClient()}>
-        <MemoryRouter initialEntries={['/countries/deu?search=abc&page=2']}>
-          <Routes>
-            <Route
-              path="/countries/:countryCode"
-              element={<CountryDetails />}
-            />
-            <Route
-              path="/"
-              element={<div>Returned to Main List Dashboard</div>}
-            />
-          </Routes>
-        </MemoryRouter>
-      </QueryClientProvider>
-    );
+    mockSearchParamsStr = 'search=abc&page=2';
+    renderDetails();
 
     await waitFor(() => {
       expect(
@@ -219,9 +195,7 @@ describe('CountryDetails Component', () => {
       ).toBeInTheDocument();
     });
 
-    const closeBtn = screen.getByRole('button', { name: '✕ Close' });
-    fireEvent.click(closeBtn);
-
-    expect(screen.getByText('Returned to Main List Dashboard')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '✕ Close' }));
+    expect(mockPush).toHaveBeenCalledWith('/?search=abc&page=2');
   });
 });

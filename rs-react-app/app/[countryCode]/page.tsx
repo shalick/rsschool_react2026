@@ -1,5 +1,3 @@
-'use client';
-
 import { Suspense } from 'react';
 import { HomePage } from '../../src/page-components/HomePage';
 

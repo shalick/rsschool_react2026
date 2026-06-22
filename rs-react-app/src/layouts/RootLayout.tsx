@@ -16,7 +16,7 @@ export function RootLayout({ children }: { children: React.ReactNode }) {
     fetchCountries();
   }, [fetchCountries]);
 
-  const isHomeActive = pathname === '/' || pathname !== '/about';
+  const isHomeActive = pathname === '/';
   const isAboutActive = pathname === '/about';
 
   return (

@@ -1,5 +1,4 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
 import { CountryCard } from './CountryCard';
 import { useSelectionStore } from '../../store/useSelectionStore';
 import { queryClient } from '../../query/queryClient';
@@ -19,14 +18,13 @@ vi.mock('../../store/useSelectionStore', () => ({
   useSelectionStore: vi.fn(),
 }));
 
-const mockNavigate = vi.fn();
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
-});
+const mockPush = vi.fn();
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => '/',
+  useParams: () => ({}),
+}));
 
 describe('CountryCard', () => {
   const mockCountry = {
@@ -44,7 +42,6 @@ describe('CountryCard', () => {
 
   const mockToggleSelection = vi.fn();
   const mockSelectedIds = new Set<string>();
-
   const mockUseSelectionStore = vi.mocked(useSelectionStore);
 
   beforeEach(() => {
@@ -56,12 +53,8 @@ describe('CountryCard', () => {
     });
   });
 
-  const renderWithRouter = (component: React.ReactElement) => {
-    return render(<BrowserRouter>{component}</BrowserRouter>);
-  };
-
   it('renders country name, flag, population, region, and capital', () => {
-    renderWithRouter(<CountryCard {...mockCountry} />);
+    render(<CountryCard {...mockCountry} />);
     expect(screen.getByText('Germany')).toBeInTheDocument();
     const flagImg = screen.getByAltText('Flag of Germany');
     expect(flagImg).toHaveAttribute('src', mockCountry.flags.svg);
@@ -82,26 +75,26 @@ describe('CountryCard', () => {
       ...mockCountry,
       flags: { ...mockCountry.flags, alt: undefined },
     };
-    renderWithRouter(<CountryCard {...countryWithoutAlt} />);
+    render(<CountryCard {...countryWithoutAlt} />);
     expect(screen.getByAltText('Flag of Germany')).toBeInTheDocument();
   });
 
   it('renders correctly when capital array is empty', () => {
     const countryEmptyCapital = { ...mockCountry, capital: [] };
-    renderWithRouter(<CountryCard {...countryEmptyCapital} />);
+    render(<CountryCard {...countryEmptyCapital} />);
     expect(screen.queryByText('Berlin')).not.toBeInTheDocument();
     expect(screen.getByText(/Capital:/)).toBeInTheDocument();
   });
 
   it('renders "N/A" for capital when capital is undefined', () => {
     const countryUndefinedCapital = { ...mockCountry, capital: undefined };
-    renderWithRouter(<CountryCard {...countryUndefinedCapital} />);
+    render(<CountryCard {...countryUndefinedCapital} />);
     expect(screen.getByText('N/A')).toBeInTheDocument();
   });
 
   it('formats large population correctly based on current locale', () => {
     const countryLargePop = { ...mockCountry, population: 1234567890 };
-    renderWithRouter(<CountryCard {...countryLargePop} />);
+    render(<CountryCard {...countryLargePop} />);
     expect(
       screen.getByText((content) =>
         content.replace(/\s/g, '').includes('1234567890')
@@ -115,30 +108,30 @@ describe('CountryCard', () => {
       selectedIds: mockSelectedIds,
       toggleSelection: mockToggleSelection,
     });
-    renderWithRouter(<CountryCard {...mockCountry} />);
+    render(<CountryCard {...mockCountry} />);
     const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
     expect(checkbox.checked).toBe(true);
   });
 
   it('toggles selection when checkbox is clicked', () => {
-    renderWithRouter(<CountryCard {...mockCountry} />);
+    render(<CountryCard {...mockCountry} />);
     const checkbox = screen.getByRole('checkbox');
     fireEvent.click(checkbox);
     expect(mockToggleSelection).toHaveBeenCalledWith('DEU');
-    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('navigates to details page when card (outside checkbox) is clicked', () => {
-    renderWithRouter(<CountryCard {...mockCountry} currentSearch="?page=2" />);
+    render(<CountryCard {...mockCountry} currentSearch="?page=2" />);
     const card = screen.getByRole('listitem');
     fireEvent.click(card);
-    expect(mockNavigate).toHaveBeenCalledWith('/deu?page=2');
+    expect(mockPush).toHaveBeenCalledWith('/deu?page=2');
     expect(mockToggleSelection).not.toHaveBeenCalled();
   });
 
-  it('prefetches country details when the card is focused or hovered', () => {
+  it('prefetches country details when the card is hovered', () => {
     const prefetchSpy = vi.spyOn(queryClient, 'prefetchQuery');
-    renderWithRouter(<CountryCard {...mockCountry} />);
+    render(<CountryCard {...mockCountry} />);
     const card = screen.getByRole('listitem');
 
     fireEvent.mouseEnter(card);
@@ -151,10 +144,10 @@ describe('CountryCard', () => {
   });
 
   it('prevents navigation when checkbox is clicked (stopPropagation works)', () => {
-    renderWithRouter(<CountryCard {...mockCountry} />);
+    render(<CountryCard {...mockCountry} />);
     const checkbox = screen.getByRole('checkbox');
     fireEvent.click(checkbox);
-    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
     expect(mockToggleSelection).toHaveBeenCalledWith('DEU');
   });
 });
