@@ -2,14 +2,12 @@ import { render, screen } from '@testing-library/react';
 import { HomePage } from '../src/page-components/HomePage';
 import { useCountriesStore } from '../src/store/useCountriesStore';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-// useRouter is from src/i18n/navigation — mocked globally in setup.ts
 
 window.scrollTo = vi.fn();
 
 const mockParams: Record<string, string> = {};
 const mockSearchParams = new URLSearchParams();
 
-// Only useParams and useSearchParams still come from next/navigation in HomePage
 vi.mock('next/navigation', () => ({
   useParams: () => mockParams,
   useSearchParams: () => mockSearchParams,

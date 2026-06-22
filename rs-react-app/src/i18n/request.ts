@@ -3,10 +3,8 @@ import { routing } from './routing';
 import type { Locale } from './config';
 
 export default getRequestConfig(async ({ requestLocale }) => {
-  // requestLocale is provided by next-intl middleware/routing
   let locale = await requestLocale;
 
-  // Validate and fall back to default
   if (!locale || !(routing.locales as readonly string[]).includes(locale)) {
     locale = routing.defaultLocale;
   }

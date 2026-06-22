@@ -33,12 +33,12 @@ function mockFallback(path: string[], search: string): NextResponse {
       c.name.common.toLowerCase().includes(query) ||
       (c.name.official ?? '').toLowerCase().includes(query)
     );
-    return NextResponse.json(results); // empty array = no results, consistent with API behaviour
+    return NextResponse.json(results);
   }
 
   // /alpha/:code
   if (segment === 'alpha' && param) {
-    const code = param.toLowerCase().replace(/\?.*$/, ''); // strip query if in path
+    const code = param.toLowerCase().replace(/\?.*$/, '');
     const detail = mockCountryDetails[code];
     if (!detail) {
       return NextResponse.json({ message: 'Not Found', status: 404 }, { status: 404 });
@@ -59,12 +59,10 @@ export async function GET(
 
   try {
     const upstream = await fetchWithTimeout(url);
-    // Fall back to mock on network errors OR upstream failures
     if (!upstream.ok && upstream.status !== 404) {
       throw new Error(`upstream ${upstream.status}`);
     }
     const data = await upstream.json();
-    // restcountries returns 404 JSON for not-found — pass it through as empty array for /name
     if (!upstream.ok) {
       if (path[0] === 'name') return NextResponse.json([]);
       return NextResponse.json(data, { status: upstream.status });

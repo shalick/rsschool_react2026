@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { NotFoundPage } from '../src/page-components/NotFoundPage';
 import { describe, expect, it } from 'vitest';
-// Link is now from src/i18n/navigation — mocked globally in setup.ts
 
 describe('NotFoundPage Component', () => {
   it('should render the 404 header and error message text', () => {

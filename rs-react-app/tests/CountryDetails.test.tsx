@@ -2,17 +2,14 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CountryDetails } from '../src/page-components/CountryDetails';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-// useRouter is from src/i18n/navigation — mocked globally in setup.ts
 
 vi.mock('../src/components/Loader/Loader', () => ({
   Loader: () => <div data-testid="loader">Loading countries…</div>,
 }));
 
-// Mutable params/searchParams so individual tests can override them
 const mockParams: Record<string, string> = { countryCode: 'deu' };
 let mockSearchParamsStr = '';
 
-// Only useParams and useSearchParams still come from next/navigation in CountryDetails
 vi.mock('next/navigation', () => ({
   useParams: () => mockParams,
   useSearchParams: () => new URLSearchParams(mockSearchParamsStr),
@@ -45,7 +42,6 @@ describe('CountryDetails Component', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     mockParams.countryCode = 'deu';
     mockSearchParamsStr = '';
-    // Get push from the global navigation mock
     const nav = await import('../src/i18n/navigation');
     mockPush = (nav.useRouter as ReturnType<typeof vi.fn>)().push;
     mockPush.mockClear();

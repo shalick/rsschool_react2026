@@ -3,8 +3,6 @@ import { CountryCard } from './CountryCard';
 import { useSelectionStore } from '../../store/useSelectionStore';
 import { queryClient } from '../../query/queryClient';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-// useRouter is from src/i18n/navigation — mocked globally in setup.ts
-// useParams/useSearchParams still come from next/navigation
 
 vi.mock('./CountryCard.module.css', () => ({
   default: {
@@ -21,7 +19,6 @@ vi.mock('../../store/useSelectionStore', () => ({
   useSelectionStore: vi.fn(),
 }));
 
-// Only mock what still comes from next/navigation in CountryCard
 vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
   useParams: () => ({}),
@@ -45,7 +42,6 @@ describe('CountryCard', () => {
   const mockSelectedIds = new Set<string>();
   const mockUseSelectionStore = vi.mocked(useSelectionStore);
 
-  // Access the global mockPush exported from setup.ts
   let mockPush: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
@@ -55,7 +51,6 @@ describe('CountryCard', () => {
       selectedIds: mockSelectedIds,
       toggleSelection: mockToggleSelection,
     });
-    // Get the push mock from the global navigation mock
     const nav = await import('../../i18n/navigation');
     mockPush = (nav.useRouter as ReturnType<typeof vi.fn>)().push;
     mockPush.mockClear();

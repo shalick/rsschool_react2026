@@ -5,13 +5,11 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 vi.mock('../../store/useCountriesStore');
 
-// useSearchParams still comes from next/navigation inside CountriesCardsList
 vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
   useParams: () => ({}),
 }));
 
-// Mock CountryCard to isolate from its own navigation dependency chain
 vi.mock('../CountryCard/CountryCard', () => ({
   CountryCard: ({ name }: { name: { common: string } }) => (
     <li role="listitem">{name.common}</li>

@@ -19,7 +19,6 @@ function interpolate(template: string, values?: Record<string, unknown>): string
   ).replace(/\{(\w+)\}/g, (_match, key) => String(values[key] ?? `{${key}}`));
 }
 
-// Global mock — useTranslations returns real English strings
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) =>
     (key: string, values?: Record<string, unknown>) => {
@@ -30,10 +29,22 @@ vi.mock('next-intl', () => ({
   NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+vi.mock('next-intl/server', () => ({
+  getTranslations: (namespace: string) => {
+    const ns = getNamespace(namespace);
+    const t = (key: string, values?: Record<string, unknown>) => {
+      const template = ns[key] ?? `${namespace}.${key}`;
+      return interpolate(template, values);
+    };
+    return Promise.resolve(t);
+  },
+  getLocale: () => Promise.resolve('en'),
+  getMessages: () => Promise.resolve(messages),
+}));
+
 export const mockPush = vi.fn();
 export const mockRefresh = vi.fn();
 
-// Global mock — components import Link/useRouter/usePathname from src/i18n/navigation
 vi.mock('../i18n/navigation', () => ({
   Link: ({
     href,

@@ -1,6 +1,5 @@
 import type { Country } from '../shared/types';
 
-/** Used as fallback when the upstream API is unreachable */
 export const mockCountries: Country[] = [
   {
     cca3: 'DEU',
