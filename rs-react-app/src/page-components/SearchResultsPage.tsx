@@ -2,11 +2,11 @@ import { SearchResultsLayout } from '../components/SearchResultsLayout/SearchRes
 import { SearchResultsLayoutInteractive } from '../components/SearchResultsLayoutInteractive/SearchResultsLayoutInteractive';
 import { DetailsPanelShell } from '../components/DetailsPanelShell/DetailsPanelShell';
 import { CountriesListServer } from '../components/CountriesListServer/CountriesListServer';
-import { SearchForm } from '../components/SearchForm/SearchForm';
+import { SearchFormClient } from '../components/SearchForm/SearchFormClient';
 import { PaginationServer } from '../components/PaginationServer/PaginationServer';
 import { RefreshButton } from '../components/RefreshButton/RefreshButton';
 import { SearchResultsError } from '../components/SearchResultsError/SearchResultsError';
-import { CountryDetails } from './CountryDetails';
+import { CountryDetailsServer } from '../components/CountryDetailsServer/CountryDetailsServer';
 import { SearchResultsPageClient } from './SearchResultsPageClient';
 import type { SearchResultsData } from '../lib/searchParams';
 import type { CountryDetail } from '../shared/types';
@@ -39,7 +39,10 @@ export function SearchResultsPage({
         <SearchResultsLayout
           left={
             <>
-              <SearchForm search={search} action={basePath} />
+              <SearchFormClient
+                search={search}
+                activeCountryCode={countryCode}
+              />
               <div
                 style={{
                   display: 'flex',
@@ -55,7 +58,8 @@ export function SearchResultsPage({
               ) : (
                 <CountriesListServer
                   countries={countries}
-                  queryString={queryString}
+                  search={search}
+                  currentPage={currentPage}
                 />
               )}
               {!error && (
@@ -71,9 +75,11 @@ export function SearchResultsPage({
           details={
             <DetailsPanelShell>
               {countryCode ? (
-                <CountryDetails
-                  initialCountry={country}
-                  countryError={countryError}
+                <CountryDetailsServer
+                  countryCode={countryCode}
+                  country={country ?? null}
+                  countryError={countryError ?? null}
+                  queryString={queryString}
                 />
               ) : null}
             </DetailsPanelShell>

@@ -1,6 +1,6 @@
 {
-  "/api/countries/[...path]/route": "/api/countries/[...path]",
   "/_not-found/page": "/_not-found",
+  "/api/countries/[...path]/route": "/api/countries/[...path]",
   "/[countryCode]/page": "/[countryCode]",
   "/page": "/",
   "/about/page": "/about"

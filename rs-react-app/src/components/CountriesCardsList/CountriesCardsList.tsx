@@ -6,6 +6,7 @@ import { useCountriesStore } from '../../store/useCountriesStore';
 import classes from './CountriesCardsList.module.css';
 import { Loader } from '../Loader/Loader';
 import { Button } from '../Button/Button';
+import { parsePageParam } from '../../lib/searchParams';
 import type { Country } from '../../shared/types';
 
 interface CountriesCardsListProps {
@@ -21,8 +22,8 @@ export function CardsList({
 }: CountriesCardsListProps) {
   const searchParams = useSearchParams();
   const { refreshCountries } = useCountriesStore();
-  const currentSearch = searchParams?.toString() ?? '';
-  const searchString = currentSearch ? `?${currentSearch}` : '';
+  const search = searchParams?.get('search') ?? '';
+  const currentPage = parsePageParam(searchParams?.get('page') ?? undefined);
 
   if (isLoading) return <Loader />;
   if (error) {
@@ -42,7 +43,8 @@ export function CardsList({
         <CountryCard
           key={country.cca3}
           {...country}
-          currentSearch={searchString}
+          search={search}
+          currentPage={currentPage}
         />
       ))}
     </ul>

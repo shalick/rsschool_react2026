@@ -4,12 +4,14 @@ import type { Country } from '../../shared/types';
 
 interface CountriesListServerProps {
   countries: Country[];
-  queryString: string;
+  search: string;
+  currentPage: number;
 }
 
 export function CountriesListServer({
   countries,
-  queryString,
+  search,
+  currentPage,
 }: CountriesListServerProps) {
   if (countries.length === 0) {
     return <p className={classes.error}>No countries found.</p>;
@@ -21,7 +23,8 @@ export function CountriesListServer({
         <CountryCard
           key={country.cca3}
           {...country}
-          currentSearch={queryString}
+          search={search}
+          currentPage={currentPage}
         />
       ))}
     </ul>

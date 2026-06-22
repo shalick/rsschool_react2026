@@ -23,8 +23,8 @@ vi.mock('../src/components/SearchResultsLayout/SearchResultsLayout', () => ({
   ),
 }));
 
-vi.mock('../src/components/SearchForm/SearchForm', () => ({
-  SearchForm: ({ search }: { search: string }) => (
+vi.mock('../src/components/SearchForm/SearchFormClient', () => ({
+  SearchFormClient: ({ search }: { search: string }) => (
     <div data-testid="search-form">{search}</div>
   ),
 }));
@@ -67,8 +67,8 @@ vi.mock('../src/components/DetailsPanelShell/DetailsPanelShell', () => ({
   ),
 }));
 
-vi.mock('../src/page-components/CountryDetails', () => ({
-  CountryDetails: () => <div data-testid="country-details">Country Details</div>,
+vi.mock('../src/components/CountryDetailsServer/CountryDetailsServer', () => ({
+  CountryDetailsServer: () => <div data-testid="country-details">Country Details</div>,
 }));
 
 const mockCountries = [

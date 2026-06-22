@@ -1,15 +1,16 @@
 'use client';
 
 import Image from 'next/image';
-import { useRouter } from '../../i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { useSelectionStore } from '../../store/useSelectionStore';
-import { queryClient } from '../../query/queryClient';
-import { fetchCountryByCode } from '../../api/countriesApi';
+import { selectCountryAction } from '../../actions/selectCountry';
+import { CountryCardCheckbox } from './CountryCardCheckbox';
 import classes from './CountryCard.module.css';
 import type { Country } from '../../shared/types';
 
-type CountryCardProps = Country & { currentSearch?: string };
+type CountryCardProps = Country & {
+  search?: string;
+  currentPage?: number;
+};
 
 export const CountryCard = ({
   cca3,
@@ -18,70 +19,44 @@ export const CountryCard = ({
   capital,
   region,
   population,
-  currentSearch = '',
+  search = '',
+  currentPage = 1,
 }: CountryCardProps) => {
-  const router = useRouter();
   const t = useTranslations('countries');
-  const { selectedIds, toggleSelection } = useSelectionStore();
-  const isSelected = selectedIds.has(cca3);
-  const countryCode = cca3.toLowerCase();
-
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation();
-    toggleSelection(cca3);
-  };
-
-  const prefetchCountryDetails = () => {
-    queryClient.prefetchQuery({
-      queryKey: ['country', countryCode],
-      queryFn: () => fetchCountryByCode(countryCode),
-    });
-  };
-
-  const handleCardClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    router.push(`/${countryCode}${currentSearch}`);
-  };
 
   return (
-    <li
-      className={classes.country}
-      onClick={handleCardClick}
-      onMouseEnter={prefetchCountryDetails}
-      onFocus={prefetchCountryDetails}
-      tabIndex={0}
-    >
-      <div className={classes.flagWrapper}>
-        <Image
-          src={flags.svg}
-          alt={flags.alt || `Flag of ${name.common}`}
-          fill
-          className={classes.flag}
-          sizes="(max-width: 768px) 100vw, 320px"
-        />
-      </div>
-      <div className={classes.countryInfo}>
-        <h3>{name.common}</h3>
-        <div className={classes.details}>
-          <p>
-            <strong>{t('population')}:</strong> {population.toLocaleString()}
-          </p>
-          <p>
-            <strong>{t('region')}:</strong> {region}
-          </p>
-          <p>
-            <strong>{t('capital')}:</strong> {capital ? capital[0] : 'N/A'}
-          </p>
-        </div>
-      </div>
-      <div className={classes.checkboxContainer}>
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={handleCheckboxChange}
-          onClick={(e) => e.stopPropagation()}
-        />
-      </div>
+    <li className={classes.country}>
+      <form action={selectCountryAction} className={classes.cardForm}>
+        <input type="hidden" name="countryCode" value={cca3} />
+        <input type="hidden" name="search" value={search} />
+        <input type="hidden" name="page" value={currentPage} />
+        <button type="submit" className={classes.cardButton}>
+          <div className={classes.flagWrapper}>
+            <Image
+              src={flags.svg}
+              alt={flags.alt || `Flag of ${name.common}`}
+              fill
+              className={classes.flag}
+              sizes="(max-width: 768px) 100vw, 320px"
+            />
+          </div>
+          <div className={classes.countryInfo}>
+            <h3>{name.common}</h3>
+            <div className={classes.details}>
+              <p>
+                <strong>{t('population')}:</strong> {population.toLocaleString()}
+              </p>
+              <p>
+                <strong>{t('region')}:</strong> {region}
+              </p>
+              <p>
+                <strong>{t('capital')}:</strong> {capital ? capital[0] : 'N/A'}
+              </p>
+            </div>
+          </div>
+        </button>
+      </form>
+      <CountryCardCheckbox cca3={cca3} />
     </li>
   );
 };

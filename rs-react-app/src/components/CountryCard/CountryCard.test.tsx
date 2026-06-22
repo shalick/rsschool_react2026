@@ -1,12 +1,13 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CountryCard } from './CountryCard';
 import { useSelectionStore } from '../../store/useSelectionStore';
-import { queryClient } from '../../query/queryClient';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 vi.mock('./CountryCard.module.css', () => ({
   default: {
     country: 'country',
+    cardForm: 'cardForm',
+    cardButton: 'cardButton',
     flagWrapper: 'flagWrapper',
     flag: 'flag',
     countryInfo: 'countryInfo',
@@ -15,13 +16,12 @@ vi.mock('./CountryCard.module.css', () => ({
   },
 }));
 
-vi.mock('../../store/useSelectionStore', () => ({
-  useSelectionStore: vi.fn(),
+vi.mock('../../actions/selectCountry', () => ({
+  selectCountryAction: vi.fn(),
 }));
 
-vi.mock('next/navigation', () => ({
-  useSearchParams: () => new URLSearchParams(),
-  useParams: () => ({}),
+vi.mock('../../store/useSelectionStore', () => ({
+  useSelectionStore: vi.fn(),
 }));
 
 describe('CountryCard', () => {
@@ -42,18 +42,13 @@ describe('CountryCard', () => {
   const mockSelectedIds = new Set<string>();
   const mockUseSelectionStore = vi.mocked(useSelectionStore);
 
-  let mockPush: ReturnType<typeof vi.fn>;
-
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
     mockSelectedIds.clear();
     mockUseSelectionStore.mockReturnValue({
       selectedIds: mockSelectedIds,
       toggleSelection: mockToggleSelection,
     });
-    const nav = await import('../../i18n/navigation');
-    mockPush = (nav.useRouter as ReturnType<typeof vi.fn>)().push;
-    mockPush.mockClear();
   });
 
   it('renders country name, flag, population, region, and capital', () => {
@@ -118,35 +113,19 @@ describe('CountryCard', () => {
     const checkbox = screen.getByRole('checkbox');
     fireEvent.click(checkbox);
     expect(mockToggleSelection).toHaveBeenCalledWith('DEU');
-    expect(mockPush).not.toHaveBeenCalled();
   });
 
-  it('navigates to details page when card (outside checkbox) is clicked', () => {
-    render(<CountryCard {...mockCountry} currentSearch="?page=2" />);
-    const card = screen.getByRole('listitem');
-    fireEvent.click(card);
-    expect(mockPush).toHaveBeenCalledWith('/deu?page=2');
-    expect(mockToggleSelection).not.toHaveBeenCalled();
+  it('includes server action form fields for country selection', () => {
+    render(<CountryCard {...mockCountry} search="ger" currentPage={2} />);
+    expect(screen.getByDisplayValue('DEU')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('ger')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('2')).toBeInTheDocument();
   });
 
-  it('prefetches country details when the card is hovered', () => {
-    const prefetchSpy = vi.spyOn(queryClient, 'prefetchQuery');
-    render(<CountryCard {...mockCountry} />);
-    const card = screen.getByRole('listitem');
-    fireEvent.mouseEnter(card);
-    expect(prefetchSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        queryKey: ['country', 'deu'],
-        queryFn: expect.any(Function),
-      })
-    );
-  });
-
-  it('prevents navigation when checkbox is clicked (stopPropagation works)', () => {
+  it('prevents checkbox click from submitting the selection form', () => {
     render(<CountryCard {...mockCountry} />);
     const checkbox = screen.getByRole('checkbox');
     fireEvent.click(checkbox);
-    expect(mockPush).not.toHaveBeenCalled();
     expect(mockToggleSelection).toHaveBeenCalledWith('DEU');
   });
 });
