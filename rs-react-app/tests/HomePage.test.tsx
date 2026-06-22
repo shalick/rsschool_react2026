@@ -1,72 +1,70 @@
 import { render, screen } from '@testing-library/react';
-import { HomePage } from '../src/page-components/HomePage';
-import { useCountriesStore } from '../src/store/useCountriesStore';
+import { SearchResultsPage } from '../src/page-components/SearchResultsPage';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-window.scrollTo = vi.fn();
-
-const mockParams: Record<string, string> = {};
-const mockSearchParams = new URLSearchParams();
-
-vi.mock('next/navigation', () => ({
-  useParams: () => mockParams,
-  useSearchParams: () => mockSearchParams,
+vi.mock('../src/page-components/SearchResultsPageClient', () => ({
+  SearchResultsPageClient: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="page-client">{children}</div>
+  ),
 }));
 
-vi.mock('../src/store/useCountriesStore', () => ({
-  useCountriesStore: vi.fn(),
+vi.mock('../src/components/SearchResultsLayoutInteractive/SearchResultsLayoutInteractive', () => ({
+  SearchResultsLayoutInteractive: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="layout-interactive">{children}</div>
+  ),
 }));
 
-vi.mock('../src/page-components/HomePage.module.css', () => ({
-  default: {
-    homeLayout: 'homeLayout',
-    splitActive: 'splitActive',
-    leftSection: 'leftSection',
-    rightSection: 'rightSection',
-  },
+vi.mock('../src/components/SearchResultsLayout/SearchResultsLayout', () => ({
+  SearchResultsLayout: ({ left, details }: { left: React.ReactNode; details: React.ReactNode }) => (
+    <div data-testid="search-results-layout">
+      <div data-testid="left-section">{left}</div>
+      <div data-testid="details-section">{details}</div>
+    </div>
+  ),
 }));
 
-vi.mock('../src/components/CountriesCardsList/CountriesCardsList', () => ({
-  CardsList: ({
+vi.mock('../src/components/SearchForm/SearchForm', () => ({
+  SearchForm: ({ search }: { search: string }) => (
+    <div data-testid="search-form">{search}</div>
+  ),
+}));
+
+vi.mock('../src/components/RefreshButton/RefreshButton', () => ({
+  RefreshButton: () => <button type="button">Refresh</button>,
+}));
+
+vi.mock('../src/components/CountriesListServer/CountriesListServer', () => ({
+  CountriesListServer: ({
     countries,
-    isLoading,
-    error,
   }: {
     countries: { cca3: string; name: { common: string } }[];
-    isLoading: boolean;
-    error: string | null;
   }) => (
-    <div data-testid="cards-list">
-      {isLoading && <span>Loading...</span>}
-      {error && <span>Error: {error}</span>}
-      {!isLoading && !error && countries.map((c) => <div key={c.cca3}>{c.name.common}</div>)}
+    <div data-testid="countries-list">
+      {countries.map((country) => (
+        <div key={country.cca3}>{country.name.common}</div>
+      ))}
     </div>
   ),
 }));
 
-vi.mock('../src/components/Search/Search', () => ({
-  Search: ({ searchStr, onSearchChange }: { searchStr: string; onSearchChange: (v: string) => void }) => (
-    <div data-testid="search">
-      <input data-testid="search-input" value={searchStr} onChange={(e) => onSearchChange(e.target.value)} />
-    </div>
-  ),
-}));
-
-vi.mock('../src/components/Pagination/Pagination', () => ({
-  Pagination: ({ currentPage, totalPages, onPageChange }: { currentPage: number; totalPages: number; onPageChange: (p: number) => void }) => (
+vi.mock('../src/components/PaginationServer/PaginationServer', () => ({
+  PaginationServer: ({ currentPage, totalPages }: { currentPage: number; totalPages: number }) => (
     <div data-testid="pagination">
-      <button onClick={() => onPageChange(currentPage + 1)}>Next</button>
-      <span>Page {currentPage} of {totalPages}</span>
+      Page {currentPage} of {totalPages}
     </div>
   ),
 }));
 
-vi.mock('../src/components/ErrorBoundary/ErrorBoundary', () => ({
-  ErrorBoundary: ({ children }: { children: React.ReactNode }) => <div data-testid="error-boundary">{children}</div>,
+vi.mock('../src/components/SearchResultsError/SearchResultsError', () => ({
+  SearchResultsError: ({ message }: { message: string }) => (
+    <div data-testid="search-error">{message}</div>
+  ),
 }));
 
-vi.mock('../src/components/ErrorSimulator/ErrorSimulator', () => ({
-  ErrorSimulator: () => <div data-testid="error-simulator">Error Simulator</div>,
+vi.mock('../src/components/DetailsPanelShell/DetailsPanelShell', () => ({
+  DetailsPanelShell: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="details-panel-shell">{children}</div>
+  ),
 }));
 
 vi.mock('../src/page-components/CountryDetails', () => ({
@@ -74,64 +72,79 @@ vi.mock('../src/page-components/CountryDetails', () => ({
 }));
 
 const mockCountries = [
-  { cca3: 'DEU', name: { common: 'Germany' }, flags: {}, capital: ['Berlin'], region: 'Europe', population: 83200000 },
-  { cca3: 'FRA', name: { common: 'France' }, flags: {}, capital: ['Paris'], region: 'Europe', population: 67390000 },
-  { cca3: 'ESP', name: { common: 'Spain' }, flags: {}, capital: ['Madrid'], region: 'Europe', population: 47351567 },
+  {
+    cca3: 'DEU',
+    name: { common: 'Germany', official: 'Germany' },
+    flags: { png: '', svg: '' },
+    capital: ['Berlin'],
+    region: 'Europe',
+    population: 83200000,
+  },
+  {
+    cca3: 'FRA',
+    name: { common: 'France', official: 'France' },
+    flags: { png: '', svg: '' },
+    capital: ['Paris'],
+    region: 'Europe',
+    population: 67390000,
+  },
+  {
+    cca3: 'ESP',
+    name: { common: 'Spain', official: 'Spain' },
+    flags: { png: '', svg: '' },
+    capital: ['Madrid'],
+    region: 'Europe',
+    population: 47351567,
+  },
 ];
 
-describe('HomePage', () => {
+const baseProps = {
+  countries: mockCountries,
+  search: '',
+  currentPage: 1,
+  totalPages: 1,
+  queryString: '',
+  error: null,
+  totalCount: 3,
+};
+
+describe('SearchResultsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete mockParams.countryCode;
-    vi.mocked(useCountriesStore).mockReturnValue({
-      countries: mockCountries,
-      isLoading: false,
-      error: null,
-      fetchCountries: vi.fn(),
-      searchCountries: vi.fn(),
-      refreshCountries: vi.fn(),
-    });
   });
 
   it('renders countries list when data is loaded', () => {
-    render(<HomePage />);
-    expect(screen.getByTestId('cards-list')).toBeInTheDocument();
+    render(<SearchResultsPage {...baseProps} />);
+    expect(screen.getByTestId('countries-list')).toBeInTheDocument();
     expect(screen.getByText('Germany')).toBeInTheDocument();
     expect(screen.getByText('France')).toBeInTheDocument();
     expect(screen.getByText('Spain')).toBeInTheDocument();
   });
 
-  it('renders search component', () => {
-    render(<HomePage />);
-    expect(screen.getByTestId('search')).toBeInTheDocument();
-  });
-
-  it('renders loading state when isLoading is true', () => {
-    vi.mocked(useCountriesStore).mockReturnValue({
-      countries: [], isLoading: true, error: null,
-      fetchCountries: vi.fn(), searchCountries: vi.fn(), refreshCountries: vi.fn(),
-    });
-    render(<HomePage />);
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  it('renders search form with current search value', () => {
+    render(<SearchResultsPage {...baseProps} search="ger" />);
+    expect(screen.getByTestId('search-form')).toHaveTextContent('ger');
   });
 
   it('renders error state when error is provided', () => {
-    vi.mocked(useCountriesStore).mockReturnValue({
-      countries: [], isLoading: false, error: 'Network error',
-      fetchCountries: vi.fn(), searchCountries: vi.fn(), refreshCountries: vi.fn(),
-    });
-    render(<HomePage />);
-    expect(screen.getByText(/Network error/)).toBeInTheDocument();
+    render(<SearchResultsPage {...baseProps} countries={[]} error="Network error" />);
+    expect(screen.getByTestId('search-error')).toHaveTextContent('Network error');
   });
 
-  it('renders country details panel when countryCode param is present', () => {
-    mockParams.countryCode = 'deu';
-    render(<HomePage />);
+  it('renders country details panel shell when countryCode is present', () => {
+    render(<SearchResultsPage {...baseProps} countryCode="deu" />);
+    expect(screen.getByTestId('details-panel-shell')).toBeInTheDocument();
     expect(screen.getByTestId('country-details')).toBeInTheDocument();
   });
 
-  it('does not render details panel when countryCode param is absent', () => {
-    render(<HomePage />);
+  it('renders empty details panel shell when countryCode is absent', () => {
+    render(<SearchResultsPage {...baseProps} />);
+    expect(screen.getByTestId('details-panel-shell')).toBeInTheDocument();
     expect(screen.queryByTestId('country-details')).not.toBeInTheDocument();
+  });
+
+  it('renders pagination when there are multiple pages', () => {
+    render(<SearchResultsPage {...baseProps} totalPages={3} currentPage={2} />);
+    expect(screen.getByTestId('pagination')).toHaveTextContent('Page 2 of 3');
   });
 });

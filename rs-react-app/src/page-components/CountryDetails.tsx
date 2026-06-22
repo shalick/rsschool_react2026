@@ -8,17 +8,19 @@ import { useTranslations } from 'next-intl';
 import { queryClient } from '../query/queryClient';
 import { Loader } from '../components/Loader/Loader';
 import { fetchCountryByCode } from '../api/countriesApi';
+import type { CountryDetail } from '../shared/types';
 import styles from './CountryDetails.module.css';
 import { Button } from '../components/Button/Button';
 
-interface ICountryDetail {
-  name: { common: string; official: string };
-  flags: { svg: string; alt?: string };
-  subregion?: string;
-  languages?: Record<string, string>;
+interface CountryDetailsProps {
+  initialCountry?: CountryDetail | null;
+  countryError?: string | null;
 }
 
-export function CountryDetails() {
+export function CountryDetails({
+  initialCountry,
+  countryError: initialError,
+}: CountryDetailsProps) {
   const t = useTranslations('details');
   const params = useParams() as { countryCode?: string };
   const router = useRouter();
@@ -28,14 +30,15 @@ export function CountryDetails() {
   const currentSearch = searchParams?.toString() ?? '';
   const queryString = currentSearch ? `?${currentSearch}` : '';
 
-  const queryResult = useQuery<ICountryDetail, Error>({
+  const queryResult = useQuery<CountryDetail, Error>({
     queryKey: ['country', normalizedCountryCode],
     queryFn: () => fetchCountryByCode(normalizedCountryCode ?? ''),
-    enabled: Boolean(normalizedCountryCode),
-    refetchOnMount: 'always',
+    enabled: Boolean(normalizedCountryCode) && !initialCountry && !initialError,
+    initialData: initialCountry ?? undefined,
+    refetchOnMount: initialCountry ? false : 'always',
   });
 
-  const country = queryResult.data as ICountryDetail | undefined;
+  const country = queryResult.data as CountryDetail | undefined;
   const { isLoading, isError, isFetching } = queryResult;
   const error = queryResult.error;
 
@@ -46,14 +49,26 @@ export function CountryDetails() {
     await queryResult.refetch();
   };
 
-  if (isLoading)
+  if (initialError && !country) {
+    return (
+      <div className={styles.errorContainer}>
+        <h2>{t('notFound')}</h2>
+        <p>{initialError ?? t('notFoundDesc')}</p>
+        <Button variant="primary" onClick={handleClose} className={styles.errorButton}>
+          {t('returnToList')}
+        </Button>
+      </div>
+    );
+  }
+
+  if (isLoading && !initialCountry)
     return (
       <div style={{ padding: '2rem' }}>
         <Loader />
       </div>
     );
 
-  if (isError && !isFetching)
+  if (isError && !isFetching && !initialCountry)
     return (
       <div className={styles.errorContainer}>
         <h2>{t('notFound')}</h2>
