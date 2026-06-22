@@ -31,13 +31,17 @@
   opacity: 1;
 }
 
-.flag {
-  display: block;
+.flagWrapper {
+  position: relative;
   width: 100%;
   height: 16rem;
-  object-fit: cover;
   border-radius: 0.5rem 0.5rem 0 0;
+  overflow: hidden;
   background-color: var(--primary-color, #f0f0f0);
+}
+
+.flag {
+  object-fit: cover;
 }
 
 .countryInfo {

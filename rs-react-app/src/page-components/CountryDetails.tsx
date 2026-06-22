@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
@@ -74,11 +75,16 @@ export function CountryDetails() {
       </Button>
 
       <h2>{country.name.official}</h2>
-      <img
-        src={country.flags.svg}
-        alt={country.flags.alt || `Flag of ${country.name.common}`}
-        className={styles.flag}
-      />
+      <div className={styles.flagWrapper}>
+        <Image
+          src={country.flags.svg}
+          alt={country.flags.alt || `Flag of ${country.name.common}`}
+          fill
+          className={styles.flag}
+          sizes="480px"
+          priority
+        />
+      </div>
       <p>
         <strong>{t('subregion')}:</strong> {country.subregion || 'N/A'}
       </p>

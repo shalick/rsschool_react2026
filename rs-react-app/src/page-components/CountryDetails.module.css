@@ -25,11 +25,17 @@
   font-size: 1.2rem;
 }
 
-.flag {
-  width: 100%;
-  max-width: 250px;
+.flagWrapper {
+  position: relative;
+  width: 250px;
+  height: 160px;
   margin: 1rem 0;
   border-radius: 4px;
+  overflow: hidden;
+}
+
+.flag {
+  object-fit: cover;
 }
 
 .errorContainer {

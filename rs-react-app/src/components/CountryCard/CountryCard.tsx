@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useSelectionStore } from '../../store/useSelectionStore';
@@ -50,11 +51,15 @@ export const CountryCard = ({
       onFocus={prefetchCountryDetails}
       tabIndex={0}
     >
-      <img
-        src={flags.svg}
-        alt={flags.alt || `Flag of ${name.common}`}
-        className={classes.flag}
-      />
+      <div className={classes.flagWrapper}>
+        <Image
+          src={flags.svg}
+          alt={flags.alt || `Flag of ${name.common}`}
+          fill
+          className={classes.flag}
+          sizes="(max-width: 768px) 100vw, 320px"
+        />
+      </div>
       <div className={classes.countryInfo}>
         <h3>{name.common}</h3>
         <div className={classes.details}>
