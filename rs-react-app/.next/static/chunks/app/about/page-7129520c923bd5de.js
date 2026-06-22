@@ -1,1 +1,0 @@
-(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[220],{4130:(e,_,n)=>{Promise.resolve().then(n.t.bind(n,5750,23))},5750:e=>{e.exports={container:"AboutPage_container__zlr44",link:"AboutPage_link__lHzIh"}}},e=>{e.O(0,[433,441,255,358],()=>e(e.s=4130)),_N_E=e.O()}]);

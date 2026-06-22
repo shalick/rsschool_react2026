@@ -13,28 +13,33 @@ export function parsePageParam(page?: string): number {
 
 export function buildQueryString(search: string, page: number): string {
   const params = new URLSearchParams();
+
   if (search.trim()) {
     params.set('search', search.trim());
   }
+
   if (page > 1) {
     params.set('page', String(page));
   }
+
   const query = params.toString();
   return query ? `?${query}` : '';
 }
 
 export function paginateCountries<T>(
-  items: T[],
+  items: T[] | unknown,
   page: number,
   perPage = ITEMS_PER_PAGE
 ) {
-  const totalCount = items.length;
+  const safeItems = Array.isArray(items) ? items : [];
+
+  const totalCount = safeItems.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
   const safePage = Math.min(Math.max(1, page), totalPages);
   const start = (safePage - 1) * perPage;
 
   return {
-    items: items.slice(start, start + perPage),
+    items: safeItems.slice(start, start + perPage),
     totalPages,
     currentPage: safePage,
     totalCount,
@@ -58,16 +63,29 @@ export async function getSearchResultsData(searchParams: {
   const search = searchParams.search ?? '';
   const requestedPage = parsePageParam(searchParams.page);
 
-  let allCountries: Country[];
+  let allCountries: Country[] = [];
   let error: string | null = null;
 
   try {
-    allCountries = search.trim()
+    const result = search.trim()
       ? await fetchCountriesByNameServer(search.trim())
       : await fetchAllCountriesServer();
+
+    if (Array.isArray(result)) {
+      allCountries = result;
+    } else if (
+      result &&
+      typeof result === 'object' &&
+      'data' in result &&
+      Array.isArray((result as any).data)
+    ) {
+      allCountries = (result as any).data;
+    } else {
+      console.error('Expected array of countries but received:', result);
+      error = 'Invalid countries data received';
+    }
   } catch (err) {
     error = err instanceof Error ? err.message : 'Failed to load countries';
-    allCountries = [];
   }
 
   const { items, totalPages, currentPage, totalCount } = paginateCountries(
@@ -76,7 +94,7 @@ export async function getSearchResultsData(searchParams: {
   );
 
   return {
-    countries: items,
+    countries: items as Country[],
     search,
     currentPage,
     totalPages,
