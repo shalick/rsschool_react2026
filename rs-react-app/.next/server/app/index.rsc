@@ -1,0 +1,19 @@
+1:"$Sreact.fragment"
+2:I[8839,["418","static/chunks/418-c261416d00ac1dcf.js","3","static/chunks/3-7dd2ae3f7d84bbf5.js","177","static/chunks/app/layout-960f1fc10a128d70.js"],"Providers"]
+3:I[6256,["418","static/chunks/418-c261416d00ac1dcf.js","3","static/chunks/3-7dd2ae3f7d84bbf5.js","177","static/chunks/app/layout-960f1fc10a128d70.js"],"RootLayout"]
+4:I[9766,[],""]
+5:I[8924,[],""]
+6:"$Sreact.suspense"
+7:I[8459,["418","static/chunks/418-c261416d00ac1dcf.js","454","static/chunks/454-054ab26b823dec0e.js","840","static/chunks/840-4a55386c48e08ef6.js","974","static/chunks/app/page-a791c9ba3fdc7c67.js"],"HomePage"]
+8:I[4431,[],"OutletBoundary"]
+a:I[5278,[],"AsyncMetadataOutlet"]
+c:I[4431,[],"ViewportBoundary"]
+e:I[4431,[],"MetadataBoundary"]
+10:I[7150,[],""]
+:HL["/_next/static/css/111d925032b24a59.css","style"]
+:HL["/_next/static/css/2907bbc37b563427.css","style"]
+0:{"P":null,"b":"MK5t7PQOBcyaL-lkgwcvH","p":"","c":["",""],"i":false,"f":[[["",{"children":["__PAGE__",{}]},"$undefined","$undefined",true],["",["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/111d925032b24a59.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]],["$","html",null,{"lang":"en","children":["$","body",null,{"children":["$","$L2",null,{"children":["$","$L3",null,{"children":["$","$L4",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L5",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","div",null,{"style":{"padding":"3rem","textAlign":"center"},"children":[["$","h1",null,{"children":"⚠️ 404 - Page Not Found"}],["$","p",null,{"children":"The page you are looking for does not exist."}],["$","a",null,{"href":"/","style":{"display":"inline-block","marginTop":"1rem","padding":"0.5rem 1rem","background":"#007bff","color":"#fff","textDecoration":"none","borderRadius":"4px"},"children":"Return to Home Page"}]]}],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}]}]}]}]]}],{"children":["__PAGE__",["$","$1","c",{"children":[["$","$6",null,{"fallback":["$","div",null,{"children":"Loading..."}],"children":["$","$L7",null,{}]}],[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/2907bbc37b563427.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]],["$","$L8",null,{"children":["$L9",["$","$La",null,{"promise":"$@b"}]]}]]}],{},null,false]},null,false],["$","$1","h",{"children":[null,[["$","$Lc",null,{"children":"$Ld"}],null],["$","$Le",null,{"children":["$","div",null,{"hidden":true,"children":["$","$6",null,{"fallback":null,"children":"$Lf"}]}]}]]}],false]],"m":"$undefined","G":["$10",[]],"s":false,"S":true}
+d:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+9:null
+b:{"metadata":[["$","title","0",{"children":"Countries Dashboard"}],["$","meta","1",{"name":"description","content":"Countries information with Next.js App Router"}]],"error":null,"digest":"$undefined"}
+f:"$b:metadata"

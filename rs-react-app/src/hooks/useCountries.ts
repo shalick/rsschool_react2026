@@ -1,14 +1,14 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'next/navigation';
 import { fetchAllCountries, fetchCountriesByName } from '../api/countriesApi';
 import type { Country } from '../shared/types';
 
 const ITEMS_PER_PAGE = 12;
 
 export function useCountries() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const currentPage = Number(searchParams.get('page')) || 1;
-  const searchStr = searchParams.get('search') || '';
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams?.get('page')) || 1;
+  const searchStr = searchParams?.get('search') || '';
   const [allCountries, setAllCountries] = useState<Country[]>([]);
   const [searchResults, setSearchResults] = useState<Country[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -71,19 +71,22 @@ export function useCountries() {
     };
   }, [searchStr]);
 
-  const changeSearch = useCallback(
-    (newSearch: string) => {
-      setSearchParams({ search: newSearch, page: '1' });
-    },
-    [setSearchParams]
-  );
+  const changeSearch = useCallback((newSearch: string) => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(searchParams?.toString() ?? '');
+      params.set('search', newSearch);
+      params.set('page', '1');
+      window.history.replaceState(null, '', `?${params.toString()}`);
+    }
+  }, [searchParams]);
 
-  const setPage = useCallback(
-    (page: number) => {
-      setSearchParams({ search: searchStr, page: String(page) });
-    },
-    [searchStr, setSearchParams]
-  );
+  const setPage = useCallback((page: number) => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(searchParams?.toString() ?? '');
+      params.set('page', String(page));
+      window.history.replaceState(null, '', `?${params.toString()}`);
+    }
+  }, [searchParams]);
 
   const sourceCountries = searchResults !== null ? searchResults : allCountries;
   const totalPages = Math.ceil(sourceCountries.length / ITEMS_PER_PAGE);

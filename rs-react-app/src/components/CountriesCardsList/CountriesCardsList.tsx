@@ -1,4 +1,6 @@
-import { useLocation } from 'react-router-dom';
+'use client';
+
+import { useSearchParams } from 'next/navigation';
 import { CountryCard } from '../CountryCard/CountryCard';
 import { useCountriesStore } from '../../store/useCountriesStore';
 import classes from './CountriesCardsList.module.css';
@@ -17,8 +19,10 @@ export function CardsList({
   isLoading,
   error,
 }: CountriesCardsListProps) {
-  const location = useLocation();
+  const searchParams = useSearchParams();
   const { refreshCountries } = useCountriesStore();
+  const currentSearch = searchParams?.toString() ?? '';
+  const searchString = currentSearch ? `?${currentSearch}` : '';
 
   if (isLoading) return <Loader />;
   if (error) {
@@ -38,7 +42,7 @@ export function CardsList({
         <CountryCard
           key={country.cca3}
           {...country}
-          currentSearch={location.search}
+          currentSearch={searchString}
         />
       ))}
     </ul>

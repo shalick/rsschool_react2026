@@ -1,4 +1,6 @@
-import { useNavigate } from 'react-router-dom';
+'use client';
+
+import { useRouter } from 'next/navigation';
 import { useSelectionStore } from '../../store/useSelectionStore';
 import { queryClient } from '../../query/queryClient';
 import { fetchCountryByCode } from '../../api/countriesApi';
@@ -16,7 +18,7 @@ export const CountryCard = ({
   population,
   currentSearch = '',
 }: CountryCardProps) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { selectedIds, toggleSelection } = useSelectionStore();
   const isSelected = selectedIds.has(cca3);
   const countryCode = cca3.toLowerCase();
@@ -35,7 +37,7 @@ export const CountryCard = ({
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/${countryCode}${currentSearch}`);
+    router.push(`/${countryCode}${currentSearch}`);
   };
 
   return (

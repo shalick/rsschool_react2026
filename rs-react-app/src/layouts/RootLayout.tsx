@@ -1,43 +1,40 @@
-import { NavLink, Outlet } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
 import { ThemeToggle } from '../components/ThemeToggle/ThemeToggle';
 import { useCountriesStore } from '../store/useCountriesStore';
 import { useEffect } from 'react';
 import { Flyout } from '../components/Flyout/Flyout';
+import { usePathname } from 'next/navigation';
 import classes from './RootLayout.module.css';
 
-export function RootLayout() {
+export function RootLayout({ children }: { children: React.ReactNode }) {
   const { fetchCountries } = useCountriesStore();
+  const pathname = usePathname();
 
   useEffect(() => {
     fetchCountries();
   }, [fetchCountries]);
 
+  const isHomeActive = pathname === '/' || pathname !== '/about';
+  const isAboutActive = pathname === '/about';
+
   return (
     <div className={classes.layout}>
       <header className={classes.header}>
         <nav className={classes.nav}>
-          {[
-            { to: '/', label: 'Home' },
-            { to: '/about', label: 'About' },
-          ].map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              className={({ isActive }) =>
-                isActive ? classes.activeLink : classes.link
-              }
-            >
-              {link.label}
-            </NavLink>
-          ))}
+          <Link href="/" className={isHomeActive ? classes.activeLink : classes.link}>
+            Home
+          </Link>
+          <Link href="/about" className={isAboutActive ? classes.activeLink : classes.link}>
+            About
+          </Link>
         </nav>
         <div className={classes.actions}>
           <ThemeToggle />
         </div>
       </header>
-      <main className={classes.main}>
-        <Outlet />
-      </main>
+      <main className={classes.main}>{children}</main>
       <Flyout />
     </div>
   );
