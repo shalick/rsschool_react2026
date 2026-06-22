@@ -1,7 +1,7 @@
 {
-  "/_not-found/page": "/_not-found",
   "/api/countries/[...path]/route": "/api/countries/[...path]",
+  "/_not-found/page": "/_not-found",
   "/[countryCode]/page": "/[countryCode]",
-  "/about/page": "/about",
-  "/page": "/"
+  "/page": "/",
+  "/about/page": "/about"
 }

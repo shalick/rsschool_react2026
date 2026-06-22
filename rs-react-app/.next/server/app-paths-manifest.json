@@ -1,7 +1,7 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
   "/api/countries/[...path]/route": "app/api/countries/[...path]/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/[countryCode]/page": "app/[countryCode]/page.js",
-  "/about/page": "app/about/page.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/about/page": "app/about/page.js"
 }
