@@ -16,7 +16,7 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const next = e.target.value as Locale;
     document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; SameSite=Lax`;
-    router.refresh();
+    window.location.reload();
   };
 
   return (

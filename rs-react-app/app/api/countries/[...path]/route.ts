@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { mockCountries, mockCountryDetails } from '../../../../src/api/mockCountries';
 
 const UPSTREAM = 'https://restcountries.com/v3.1';
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 8000;
 
 async function fetchWithTimeout(url: string): Promise<Response> {
   const controller = new AbortController();
@@ -18,25 +18,23 @@ async function fetchWithTimeout(url: string): Promise<Response> {
   }
 }
 
-function mockFallback(path: string[], search: string): NextResponse {
+function mockFallback(path: string[]): NextResponse {
   const [segment, param] = path;
 
-  // /all
   if (segment === 'all') {
     return NextResponse.json(mockCountries);
   }
 
-  // /name/:name
   if (segment === 'name' && param) {
     const query = param.toLowerCase();
-    const results = mockCountries.filter((c) =>
-      c.name.common.toLowerCase().includes(query) ||
-      (c.name.official ?? '').toLowerCase().includes(query)
+    const results = mockCountries.filter(
+      (c) =>
+        c.name.common.toLowerCase().includes(query) ||
+        (c.name.official ?? '').toLowerCase().includes(query)
     );
     return NextResponse.json(results);
   }
 
-  // /alpha/:code
   if (segment === 'alpha' && param) {
     const code = param.toLowerCase().replace(/\?.*$/, '');
     const detail = mockCountryDetails[code];
@@ -59,17 +57,21 @@ export async function GET(
 
   try {
     const upstream = await fetchWithTimeout(url);
+
     if (!upstream.ok && upstream.status !== 404) {
       throw new Error(`upstream ${upstream.status}`);
     }
+
     const data = await upstream.json();
+
     if (!upstream.ok) {
       if (path[0] === 'name') return NextResponse.json([]);
       return NextResponse.json(data, { status: upstream.status });
     }
+
     return NextResponse.json(data, { status: upstream.status });
   } catch (err) {
     console.warn('[api/countries] upstream unreachable, using mock data:', (err as Error).message);
-    return mockFallback(path, search);
+    return mockFallback(path);
   }
 }

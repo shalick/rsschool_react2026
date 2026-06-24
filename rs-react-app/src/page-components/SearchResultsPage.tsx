@@ -28,7 +28,7 @@ export function SearchResultsPage({
   country,
   countryError,
 }: SearchResultsPageProps) {
-  const basePath = countryCode ? `/${countryCode.toLowerCase()}` : '/';
+  const basePath = countryCode ? `/country/${countryCode.toLowerCase()}` : '/';
 
   return (
     <SearchResultsPageClient>
@@ -37,6 +37,7 @@ export function SearchResultsPage({
         queryString={queryString}
       >
         <SearchResultsLayout
+          hasCountry={Boolean(countryCode)}
           left={
             <>
               <SearchFormClient

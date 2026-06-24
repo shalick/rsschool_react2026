@@ -18,6 +18,6 @@ export async function refreshCountryDetailsAction(formData: FormData): Promise<v
     return;
   }
 
-  revalidatePath(`/${countryCode}`);
-  redirect(`/${countryCode}${queryString}`);
+  revalidatePath(`/country/${countryCode}`);
+  redirect(`/country/${countryCode}${queryString}`);
 }

@@ -41,6 +41,17 @@ export async function CountryDetailsServer({
     return null;
   }
 
+  const countryName = country?.name?.official ?? country?.name?.common ?? 'Unknown country';
+  const flagSrc = country?.flags?.svg ?? '/placeholder-flag.svg';
+  const flagAlt = country?.flags?.alt || `Flag of ${country?.name?.common ?? 'country'}`;
+  const subregion = country?.subregion ?? 'N/A';
+  
+  const languages = country?.languages
+    ? Array.isArray(country.languages)
+      ? (country.languages as string[]).join(', ')
+      : Object.values(country.languages).filter(v => typeof v === 'string').join(', ')
+    : 'N/A';
+
   return (
     <div className={styles.container}>
       <form action={refreshCountryDetailsAction}>
@@ -57,11 +68,11 @@ export async function CountryDetailsServer({
         </button>
       </form>
 
-      <h2>{country.name.official ?? country.name.common}</h2>
+      <h2>{countryName}</h2>
       <div className={styles.flagWrapper}>
         <Image
-          src={country.flags.svg}
-          alt={country.flags.alt || `Flag of ${country.name.common}`}
+          src={flagSrc}
+          alt={flagAlt}
           fill
           className={styles.flag}
           sizes="480px"
@@ -69,11 +80,10 @@ export async function CountryDetailsServer({
         />
       </div>
       <p>
-        <strong>{t('subregion')}:</strong> {country.subregion || 'N/A'}
+        <strong>{t('subregion')}:</strong> {subregion}
       </p>
       <p>
-        <strong>{t('languages')}:</strong>{' '}
-        {country.languages ? Object.values(country.languages).join(', ') : 'N/A'}
+        <strong>{t('languages')}:</strong> {languages}
       </p>
     </div>
   );

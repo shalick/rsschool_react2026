@@ -8,6 +8,8 @@ import { queryClient } from '../src/query/queryClient';
 import type { AbstractIntlMessages } from 'next-intl';
 import type { Locale } from '../src/i18n/config';
 
+const defaultTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+
 interface ProvidersProps {
   children: React.ReactNode;
   locale: Locale;
@@ -16,7 +18,7 @@ interface ProvidersProps {
 
 export function Providers({ children, locale, messages }: ProvidersProps) {
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
+    <NextIntlClientProvider locale={locale} messages={messages} timeZone={defaultTimeZone}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>{children}</ThemeProvider>
         <ReactQueryDevtools initialIsOpen={false} />

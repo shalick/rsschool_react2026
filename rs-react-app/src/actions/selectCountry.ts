@@ -14,5 +14,5 @@ export async function selectCountryAction(formData: FormData): Promise<void> {
     return;
   }
 
-  redirect(`/${countryCode}${buildQueryString(search, page)}`);
+  redirect(`/country/${countryCode.toLowerCase()}${buildQueryString(search, page)}`);
 }

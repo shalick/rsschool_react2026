@@ -24,6 +24,9 @@ export const CountryCard = ({
 }: CountryCardProps) => {
   const t = useTranslations('countries');
 
+  const imageSrc = flags?.svg ?? flags?.png ?? '/placeholder-flag.svg';
+  const imageAlt = flags?.alt || `Flag of ${name?.common ?? 'country'}`;
+
   return (
     <li className={classes.country}>
       <form action={selectCountryAction} className={classes.cardForm}>
@@ -33,21 +36,21 @@ export const CountryCard = ({
         <button type="submit" className={classes.cardButton}>
           <div className={classes.flagWrapper}>
             <Image
-              src={flags.svg}
-              alt={flags.alt || `Flag of ${name.common}`}
+              src={imageSrc}
+              alt={imageAlt}
               fill
               className={classes.flag}
               sizes="(max-width: 768px) 100vw, 320px"
             />
           </div>
           <div className={classes.countryInfo}>
-            <h3>{name.common}</h3>
+            <h3>{name?.common ?? 'Unknown country'}</h3>
             <div className={classes.details}>
               <p>
-                <strong>{t('population')}:</strong> {population.toLocaleString()}
+                <strong>{t('population')}:</strong> {population?.toLocaleString() ?? 'N/A'}
               </p>
               <p>
-                <strong>{t('region')}:</strong> {region}
+                <strong>{t('region')}:</strong> {region ?? 'N/A'}
               </p>
               <p>
                 <strong>{t('capital')}:</strong> {capital ? capital[0] : 'N/A'}

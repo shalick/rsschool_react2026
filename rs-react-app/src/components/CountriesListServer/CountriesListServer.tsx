@@ -19,14 +19,19 @@ export function CountriesListServer({
 
   return (
     <ul className={classes.cardsContainer}>
-      {countries.map((country) => (
-        <CountryCard
-          key={country.cca3}
-          {...country}
-          search={search}
-          currentPage={currentPage}
-        />
-      ))}
+      {countries.map((country, index) => {
+        const key =
+          country.cca3 ??
+          `${country.name?.common ?? 'country'}-${index}`;
+        return (
+          <CountryCard
+            key={key}
+            {...country}
+            search={search}
+            currentPage={currentPage}
+          />
+        );
+      })}
     </ul>
   );
 }
