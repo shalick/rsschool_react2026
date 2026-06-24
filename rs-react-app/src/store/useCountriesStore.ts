@@ -19,7 +19,8 @@ export const useCountriesStore = create<CountriesState>((set, get) => ({
 
   fetchCountries: async () => {
     const { countries, isLoading } = get();
-    if (countries.length > 0 || isLoading) return;
+    const safeCountries = Array.isArray(countries) ? countries : [];
+    if (safeCountries.length > 0 || isLoading) return;
 
     set({ isLoading: true, error: null });
 

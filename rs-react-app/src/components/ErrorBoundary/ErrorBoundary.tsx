@@ -17,12 +17,26 @@ export class ErrorBoundary extends Component<
     this.state = { hasError: false };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static getDerivedStateFromError(_error: Error): ErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    // Let Next.js handle redirect and notFound errors — don't catch them
+    if (
+      error?.message?.includes('NEXT_REDIRECT') ||
+      error?.message?.includes('NEXT_NOT_FOUND') ||
+      (error as { digest?: string })?.digest?.startsWith('NEXT_REDIRECT') ||
+      (error as { digest?: string })?.digest?.startsWith('NEXT_NOT_FOUND')
+    ) {
+      throw error;
+    }
     return { hasError: true };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    if (
+      (error as { digest?: string })?.digest?.startsWith('NEXT_REDIRECT') ||
+      (error as { digest?: string })?.digest?.startsWith('NEXT_NOT_FOUND')
+    ) {
+      throw error;
+    }
     console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
 

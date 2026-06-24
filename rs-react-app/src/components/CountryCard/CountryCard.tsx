@@ -1,11 +1,16 @@
-import { useNavigate } from 'react-router-dom';
-import { useSelectionStore } from '../../store/useSelectionStore';
-import { queryClient } from '../../query/queryClient';
-import { fetchCountryByCode } from '../../api/countriesApi';
+'use client';
+
+import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+import { selectCountryAction } from '../../actions/selectCountry';
+import { CountryCardCheckbox } from './CountryCardCheckbox';
 import classes from './CountryCard.module.css';
 import type { Country } from '../../shared/types';
 
-type CountryCardProps = Country & { currentSearch?: string };
+type CountryCardProps = Country & {
+  search?: string;
+  currentPage?: number;
+};
 
 export const CountryCard = ({
   cca3,
@@ -14,65 +19,47 @@ export const CountryCard = ({
   capital,
   region,
   population,
-  currentSearch = '',
+  search = '',
+  currentPage = 1,
 }: CountryCardProps) => {
-  const navigate = useNavigate();
-  const { selectedIds, toggleSelection } = useSelectionStore();
-  const isSelected = selectedIds.has(cca3);
-  const countryCode = cca3.toLowerCase();
+  const t = useTranslations('countries');
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation();
-    toggleSelection(cca3);
-  };
-
-  const prefetchCountryDetails = () => {
-    queryClient.prefetchQuery({
-      queryKey: ['country', countryCode],
-      queryFn: () => fetchCountryByCode(countryCode),
-    });
-  };
-
-  const handleCardClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate(`/${countryCode}${currentSearch}`);
-  };
+  const imageSrc = flags?.svg ?? flags?.png ?? '/placeholder-flag.svg';
+  const imageAlt = flags?.alt || `Flag of ${name?.common ?? 'country'}`;
 
   return (
-    <li
-      className={classes.country}
-      onClick={handleCardClick}
-      onMouseEnter={prefetchCountryDetails}
-      onFocus={prefetchCountryDetails}
-      tabIndex={0}
-    >
-      <img
-        src={flags.svg}
-        alt={flags.alt || `Flag of ${name.common}`}
-        className={classes.flag}
-      />
-      <div className={classes.countryInfo}>
-        <h3>{name.common}</h3>
-        <div className={classes.details}>
-          <p>
-            <strong>Population:</strong> {population.toLocaleString()}
-          </p>
-          <p>
-            <strong>Region:</strong> {region}
-          </p>
-          <p>
-            <strong>Capital:</strong> {capital ? capital[0] : 'N/A'}
-          </p>
-        </div>
-      </div>
-      <div className={classes.checkboxContainer}>
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={handleCheckboxChange}
-          onClick={(e) => e.stopPropagation()}
-        />
-      </div>
+    <li className={classes.country}>
+      <form action={selectCountryAction} className={classes.cardForm}>
+        <input type="hidden" name="countryCode" value={cca3} />
+        <input type="hidden" name="search" value={search} />
+        <input type="hidden" name="page" value={currentPage} />
+        <button type="submit" className={classes.cardButton}>
+          <div className={classes.flagWrapper}>
+            <Image
+              src={imageSrc}
+              alt={imageAlt}
+              fill
+              className={classes.flag}
+              sizes="(max-width: 768px) 100vw, 320px"
+            />
+          </div>
+          <div className={classes.countryInfo}>
+            <h3>{name?.common ?? 'Unknown country'}</h3>
+            <div className={classes.details}>
+              <p>
+                <strong>{t('population')}:</strong> {population?.toLocaleString() ?? 'N/A'}
+              </p>
+              <p>
+                <strong>{t('region')}:</strong> {region ?? 'N/A'}
+              </p>
+              <p>
+                <strong>{t('capital')}:</strong> {capital ? capital[0] : 'N/A'}
+              </p>
+            </div>
+          </div>
+        </button>
+      </form>
+      <CountryCardCheckbox cca3={cca3} />
     </li>
   );
 };

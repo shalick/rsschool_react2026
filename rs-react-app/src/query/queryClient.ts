@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 
 const parseCacheTtlMs = (): number => {
-  const rawValue = import.meta.env.VITE_QUERY_CACHE_TTL_MS;
+  const rawValue = process.env.NEXT_PUBLIC_QUERY_CACHE_TTL_MS;
   const parsed = Number(rawValue);
 
   if (Number.isFinite(parsed) && parsed > 0) {

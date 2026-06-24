@@ -1,9 +1,12 @@
-import { useLocation } from 'react-router-dom';
+'use client';
+
+import { useSearchParams } from 'next/navigation';
 import { CountryCard } from '../CountryCard/CountryCard';
 import { useCountriesStore } from '../../store/useCountriesStore';
 import classes from './CountriesCardsList.module.css';
 import { Loader } from '../Loader/Loader';
 import { Button } from '../Button/Button';
+import { parsePageParam } from '../../lib/searchParams';
 import type { Country } from '../../shared/types';
 
 interface CountriesCardsListProps {
@@ -17,8 +20,10 @@ export function CardsList({
   isLoading,
   error,
 }: CountriesCardsListProps) {
-  const location = useLocation();
+  const searchParams = useSearchParams();
   const { refreshCountries } = useCountriesStore();
+  const search = searchParams?.get('search') ?? '';
+  const currentPage = parsePageParam(searchParams?.get('page') ?? undefined);
 
   if (isLoading) return <Loader />;
   if (error) {
@@ -34,13 +39,19 @@ export function CardsList({
 
   return (
     <ul className={classes.cardsContainer}>
-      {countries.map((country) => (
-        <CountryCard
-          key={country.cca3}
-          {...country}
-          currentSearch={location.search}
-        />
-      ))}
+      {countries.map((country, index) => {
+        const key =
+          country.cca3 ??
+          `${country.name?.common ?? 'country'}-${index}`;
+        return (
+          <CountryCard
+            key={key}
+            {...country}
+            search={search}
+            currentPage={currentPage}
+          />
+        );
+      })}
     </ul>
   );
 }

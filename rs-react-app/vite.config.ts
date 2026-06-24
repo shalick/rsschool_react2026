@@ -1,21 +1,18 @@
 import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  plugins: [react()],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'https://restcountries.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      },
+  // Vite 8 uses oxc to transform — override jsx:preserve from tsconfig
+  // so tests can parse TSX files without a React plugin
+  oxc: {
+    jsx: {
+      runtime: 'automatic',
+      importSource: 'react',
     },
   },
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: './src/test/setup.ts',
+    setupFiles: './src/test/setup.tsx',
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
