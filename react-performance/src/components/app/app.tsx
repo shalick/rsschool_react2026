@@ -30,6 +30,7 @@ type ProfileMetric = {
 declare global {
   interface Window {
     __profileMetrics?: ProfileMetric[];
+    __lastProfileMetric?: ProfileMetric;
   }
 }
 
@@ -66,6 +67,7 @@ export const App = () => {
     };
 
     window.__profileMetrics = [...(window.__profileMetrics ?? []), metric].slice(-10);
+    window.__lastProfileMetric = metric;
   };
 
   const handleSearch = useCallback((value: string) => {
@@ -143,16 +145,18 @@ export const App = () => {
         </div>
 
         {/* Country List */}
-        <CountryList
-          countries={data}
-          searchQuery={state.searchQuery}
-          selectedColumns={state.selectedColumns}
-          selectedRegion={state.selectedRegion}
-          selectedYear={state.selectedYear}
-          sortField={state.sortField}
-          sortOrder={state.sortOrder}
-          onYearChange={handleYearChange}
-        />
+        <Profiler id="country-list" onRender={handleProfileRender}>
+          <CountryList
+            countries={data}
+            searchQuery={state.searchQuery}
+            selectedColumns={state.selectedColumns}
+            selectedRegion={state.selectedRegion}
+            selectedYear={state.selectedYear}
+            sortField={state.sortField}
+            sortOrder={state.sortOrder}
+            onYearChange={handleYearChange}
+          />
+        </Profiler>
 
         {/* Column Modal */}
         <ColumnModal

@@ -1,4 +1,5 @@
 import type { Country } from '../../types';
+import type { ListChildComponentProps } from 'react-window';
 import { CountryCard } from '../country-card/country-card';
 import { getPopulationForYear, createYearDataMap } from '../../utils/data-transformers';
 import { useMemo } from 'react';
@@ -46,7 +47,7 @@ export const CountryList = ({
     return result;
   }, [countries, searchQuery, selectedRegion, selectedYear, sortField, sortOrder]);
 
-  const Row = ({ index, style }: { index: number; style: Record<string, unknown> }) => {
+  const Row = ({ index, style }: ListChildComponentProps) => {
     const country = filteredCountries[index];
     return (
       <div style={style}>
